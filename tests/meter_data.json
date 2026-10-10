@@ -1,0 +1,3433 @@
+{
+  "metadata": {
+    "collected_at": "2026-10-10T16:23:21.140971+00:00",
+    "meter_model": "Mercury 234",
+    "meter_manufacturer": "Incotex",
+    "meter_serial_number": "41920942",
+    "meter_firmware": "09.00.00",
+    "connection": {
+      "protocol": "esphome",
+      "host": "192.168.2.214",
+      "port_name": "Optical Probe",
+      "client_logical_address": 32,
+      "server_logical_address": 1,
+      "server_physical_address": 42,
+      "security": "LowLevelSecurity",
+      "baudrate": 9600
+    }
+  },
+  "exchanges": [
+    {
+      "id": "snrm_connect",
+      "session": "session_1_normal",
+      "category": "session_management",
+      "description": "Establish HDLC connection (SNRM -> UA)",
+      "request_hdlc": {
+        "raw_hex": "7ea00802554193e9577e",
+        "frame_format": {
+          "hex": "a008",
+          "type": 10,
+          "segmented": false,
+          "length": 8
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "93",
+          "type": "SNRM",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": null,
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "e957"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea021410255737f4f8180140502008006020080070400000001080400000001ce6a7e",
+        "frame_format": {
+          "hex": "a021",
+          "type": 10,
+          "segmented": false,
+          "length": 33
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "73",
+          "type": "UA",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": "7f4f8180140502008006020080070400000001080400000001",
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "ce6a"
+      },
+      "request_apdu": null,
+      "response_apdu": null,
+      "decoded_value": null
+    },
+    {
+      "id": "aarq_associate_success",
+      "session": "session_1_normal",
+      "category": "session_management",
+      "description": "LowLevelSecurity Application Association (AARQ -> AARE Accepted)",
+      "request_hdlc": {
+        "raw_hex": "7ea04f025541108410e6e6006040a109060760857405080101a60a04087574691cc56a72648a0207808b0760857405080201ac088006313131313131be10040e01000000065f1f040020525fffff705c7e",
+        "frame_format": {
+          "hex": "a04f",
+          "type": 10,
+          "segmented": false,
+          "length": 79
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "8410",
+        "info_hex": "e6e6006040a109060760857405080101a60a04087574691cc56a72648a0207808b0760857405080201ac088006313131313131be10040e01000000065f1f040020525fffff",
+        "llc_hex": "e6e600",
+        "apdu_hex": "6040a109060760857405080101a60a04087574691cc56a72648a0207808b0760857405080201ac088006313131313131be10040e01000000065f1f040020525fffff",
+        "fcs_hex": "705c"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea03841025530c4dae6e7006129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007828b7e",
+        "frame_format": {
+          "hex": "a038",
+          "type": 10,
+          "segmented": false,
+          "length": 56
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "c4da",
+        "info_hex": "e6e7006129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007",
+        "llc_hex": "e6e700",
+        "apdu_hex": "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007",
+        "fcs_hex": "828b"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "6040a109060760857405080101a60a04087574691cc56a72648a0207808b0760857405080201ac088006313131313131be10040e01000000065f1f040020525fffff",
+        "tag_hex": "60",
+        "type": "AARQ",
+        "name": "ApplicationAssociationRequest"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007",
+        "tag_hex": "61",
+        "type": "AARE",
+        "name": "ApplicationAssociationResponse"
+      },
+      "decoded_value": "AssociationResult.ACCEPTED"
+    },
+    {
+      "id": "get_logical_device_name",
+      "session": "session_1_normal",
+      "category": "identification",
+      "description": "GET Logical Device Name (Obis(a=0, b=0, c=42, d=0, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=42, d=0, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554132a241e6e600c001c0000100002a0000ff020083d57e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "32",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a241",
+        "info_hex": "e6e600c001c0000100002a0000ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c0000100002a0000ff0200",
+        "fcs_hex": "83d5"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea023410255527c69e6e700c401c0000910494e433233343030343139323039343214ab7e",
+        "frame_format": {
+          "hex": "a023",
+          "type": 10,
+          "segmented": false,
+          "length": 35
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "52",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "7c69",
+        "info_hex": "e6e700c401c0000910494e4332333430303431393230393432",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c0000910494e4332333430303431393230393432",
+        "fcs_hex": "14ab"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c0000100002a0000ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c0000910494e4332333430303431393230393432",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c0",
+        "invoke_id": 0,
+        "result": "DATA",
+        "data_hex": "0910494e4332333430303431393230393432"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "494e4332333430303431393230393432",
+        "str": "INC2340041920942"
+      }
+    },
+    {
+      "id": "get_equipment_id",
+      "session": "session_1_normal",
+      "category": "identification",
+      "description": "GET Meter Serial Number (Obis(a=0, b=0, c=96, d=1, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=1, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541549247e6e600c001c100010000600100ff020089a07e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "54",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9247",
+        "info_hex": "e6e600c001c100010000600100ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c100010000600100ff0200",
+        "fcs_hex": "89a0"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01b41025574b9a3e6e700c401c1000a083431393230393432d4217e",
+        "frame_format": {
+          "hex": "a01b",
+          "type": 10,
+          "segmented": false,
+          "length": 27
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "74",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "b9a3",
+        "info_hex": "e6e700c401c1000a083431393230393432",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c1000a083431393230393432",
+        "fcs_hex": "d421"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c100010000600100ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c1000a083431393230393432",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c1",
+        "invoke_id": 1,
+        "result": "DATA",
+        "data_hex": "0a083431393230393432"
+      },
+      "decoded_value": "41920942"
+    },
+    {
+      "id": "get_software_package",
+      "session": "session_1_normal",
+      "category": "identification",
+      "description": "GET Software Package / Firmware Version (Obis(a=0, b=0, c=96, d=1, e=2, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=1, e=2, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541768245e6e600c001c200010000600102ff02004c677e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "76",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "8245",
+        "info_hex": "e6e600c001c200010000600102ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c200010000600102ff0200",
+        "fcs_hex": "4c67"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01b41025596a567e6e700c401c2000a0830392e30302e3030036b7e",
+        "frame_format": {
+          "hex": "a01b",
+          "type": 10,
+          "segmented": false,
+          "length": 27
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "96",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "a567",
+        "info_hex": "e6e700c401c2000a0830392e30302e3030",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c2000a0830392e30302e3030",
+        "fcs_hex": "036b"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c200010000600102ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c2000a0830392e30302e3030",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c2",
+        "invoke_id": 2,
+        "result": "DATA",
+        "data_hex": "0a0830392e30302e3030"
+      },
+      "decoded_value": "09.00.00"
+    },
+    {
+      "id": "get_current_l1",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Current Phase L1 (mA) (Obis(a=1, b=0, c=31, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=31, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554198f24be6e600c001c3000301001f0700ff0200fed27e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "98",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "f24b",
+        "info_hex": "e6e600c001c3000301001f0700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c3000301001f0700ff0200",
+        "fcs_hex": "fed2"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255b8add3e6e700c401c30006000008110ee07e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "b8",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "add3",
+        "info_hex": "e6e700c401c3000600000811",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c3000600000811",
+        "fcs_hex": "0ee0"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c3000301001f0700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c3000600000811",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c3",
+        "invoke_id": 3,
+        "result": "DATA",
+        "data_hex": "0600000811"
+      },
+      "decoded_value": 2065
+    },
+    {
+      "id": "get_current_l2",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Current Phase L2 (mA) (Obis(a=1, b=0, c=51, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=51, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541bae249e6e600c001c400030100330700ff02008cc67e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "ba",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "e249",
+        "info_hex": "e6e600c001c400030100330700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c400030100330700ff0200",
+        "fcs_hex": "8cc6"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255dab993e6e700c401c40006000004da69f67e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "da",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "b993",
+        "info_hex": "e6e700c401c40006000004da",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c40006000004da",
+        "fcs_hex": "69f6"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c400030100330700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c40006000004da",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c4",
+        "invoke_id": 4,
+        "result": "DATA",
+        "data_hex": "06000004da"
+      },
+      "decoded_value": 1242
+    },
+    {
+      "id": "get_current_l3",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Current Phase L3 (mA) (Obis(a=1, b=0, c=71, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=71, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541dcd24fe6e600c001c500030100470700ff0200b0467e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "dc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "d24f",
+        "info_hex": "e6e600c001c500030100470700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c500030100470700ff0200",
+        "fcs_hex": "b046"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255fc8dd7e6e700c401c500060000018b08547e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "fc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "8dd7",
+        "info_hex": "e6e700c401c500060000018b",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c500060000018b",
+        "fcs_hex": "0854"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c500030100470700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c500060000018b",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c5",
+        "invoke_id": 5,
+        "result": "DATA",
+        "data_hex": "060000018b"
+      },
+      "decoded_value": 395
+    },
+    {
+      "id": "get_voltage_l1",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Voltage Phase L1 (0.01 V) (Obis(a=1, b=0, c=32, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=32, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541fec24de6e600c001c600030100200700ff020063237e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "fe",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "c24d",
+        "info_hex": "e6e600c001c600030100200700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c600030100200700ff0200",
+        "fcs_hex": "6323"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0144102551e1905e6e700c401c6001255cf6b127e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "1e",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "1905",
+        "info_hex": "e6e700c401c6001255cf",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c6001255cf",
+        "fcs_hex": "6b12"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c600030100200700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c6001255cf",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c6",
+        "invoke_id": 6,
+        "result": "DATA",
+        "data_hex": "1255cf"
+      },
+      "decoded_value": 21967
+    },
+    {
+      "id": "get_voltage_l2",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Voltage Phase L2 (0.01 V) (Obis(a=1, b=0, c=52, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=52, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554110b243e6e600c001c700030100340700ff0200ee247e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "b243",
+        "info_hex": "e6e600c001c700030100340700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c700030100340700ff0200",
+        "fcs_hex": "ee24"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0144102553065cde6e700c401c70012511598077e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "65cd",
+        "info_hex": "e6e700c401c700125115",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c700125115",
+        "fcs_hex": "9807"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c700030100340700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c700125115",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c7",
+        "invoke_id": 7,
+        "result": "DATA",
+        "data_hex": "125115"
+      },
+      "decoded_value": 20757
+    },
+    {
+      "id": "get_voltage_l3",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Voltage Phase L3 (0.01 V) (Obis(a=1, b=0, c=72, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=72, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554132a241e6e600c001c800030100480700ff020057cc7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "32",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a241",
+        "info_hex": "e6e600c001c800030100480700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c800030100480700ff0200",
+        "fcs_hex": "57cc"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01441025552718de6e700c401c8001257b388f97e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "52",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "718d",
+        "info_hex": "e6e700c401c8001257b3",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c8001257b3",
+        "fcs_hex": "88f9"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c800030100480700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c8001257b3",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c8",
+        "invoke_id": 8,
+        "result": "DATA",
+        "data_hex": "1257b3"
+      },
+      "decoded_value": 22451
+    },
+    {
+      "id": "get_active_power_total",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Total Active Power (0.01 W) (Obis(a=1, b=0, c=1, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541549247e6e600c001c900030100010700ff020064be7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "54",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9247",
+        "info_hex": "e6e600c001c900030100010700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c900030100010700ff0200",
+        "fcs_hex": "64be"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025574cddfe6e700c401c900050000e98eaa887e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "74",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "cddf",
+        "info_hex": "e6e700c401c900050000e98e",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c900050000e98e",
+        "fcs_hex": "aa88"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c900030100010700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c900050000e98e",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c9",
+        "invoke_id": 9,
+        "result": "DATA",
+        "data_hex": "050000e98e"
+      },
+      "decoded_value": 59790
+    },
+    {
+      "id": "get_active_power_l1",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Active Power Phase L1 (0.01 W) (Obis(a=1, b=0, c=21, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=21, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541768245e6e600c001ca00030100150700ff0200cb127e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "76",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "8245",
+        "info_hex": "e6e600c001ca00030100150700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001ca00030100150700ff0200",
+        "fcs_hex": "cb12"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025596d11be6e700c401ca000500007610a6c77e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "96",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "d11b",
+        "info_hex": "e6e700c401ca000500007610",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401ca000500007610",
+        "fcs_hex": "a6c7"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001ca00030100150700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401ca000500007610",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "ca",
+        "invoke_id": 10,
+        "result": "DATA",
+        "data_hex": "0500007610"
+      },
+      "decoded_value": 30224
+    },
+    {
+      "id": "get_active_power_l2",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Active Power Phase L2 (0.01 W) (Obis(a=1, b=0, c=41, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=41, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554198f24be6e600c001cb00030100290700ff02007eb17e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "98",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "f24b",
+        "info_hex": "e6e600c001cb00030100290700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cb00030100290700ff0200",
+        "fcs_hex": "7eb1"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255b8add3e6e700c401cb0005000055d024977e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "b8",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "add3",
+        "info_hex": "e6e700c401cb0005000055d0",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cb0005000055d0",
+        "fcs_hex": "2497"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cb00030100290700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cb0005000055d0",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cb",
+        "invoke_id": 11,
+        "result": "DATA",
+        "data_hex": "05000055d0"
+      },
+      "decoded_value": 21968
+    },
+    {
+      "id": "get_active_power_l3",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Active Power Phase L3 (0.01 W) (Obis(a=1, b=0, c=61, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=61, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541bae249e6e600c001cc000301003d0700ff020084437e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "ba",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "e249",
+        "info_hex": "e6e600c001cc000301003d0700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cc000301003d0700ff0200",
+        "fcs_hex": "8443"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255dab993e6e700c401cc000500001d5f65a47e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "da",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "b993",
+        "info_hex": "e6e700c401cc000500001d5f",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cc000500001d5f",
+        "fcs_hex": "65a4"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cc000301003d0700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cc000500001d5f",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cc",
+        "invoke_id": 12,
+        "result": "DATA",
+        "data_hex": "0500001d5f"
+      },
+      "decoded_value": 7519
+    },
+    {
+      "id": "get_apparent_power_l1",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Apparent Power Phase L1 (0.01 VA) (Obis(a=1, b=0, c=29, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=29, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541dcd24fe6e600c001cd000301001d0700ff020075937e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "dc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "d24f",
+        "info_hex": "e6e600c001cd000301001d0700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cd000301001d0700ff0200",
+        "fcs_hex": "7593"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255fc8dd7e6e700c401cd00060000b1e817e17e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "fc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "8dd7",
+        "info_hex": "e6e700c401cd00060000b1e8",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cd00060000b1e8",
+        "fcs_hex": "17e1"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cd000301001d0700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cd00060000b1e8",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cd",
+        "invoke_id": 13,
+        "result": "DATA",
+        "data_hex": "060000b1e8"
+      },
+      "decoded_value": 45544
+    },
+    {
+      "id": "get_apparent_power_l2",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Apparent Power Phase L2 (0.01 VA) (Obis(a=1, b=0, c=49, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=49, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541fec24de6e600c001ce00030100310700ff020052d97e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "fe",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "c24d",
+        "info_hex": "e6e600c001ce00030100310700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001ce00030100310700ff0200",
+        "fcs_hex": "52d9"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0164102551e9113e6e700c401ce0006000055bc21d37e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "1e",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "9113",
+        "info_hex": "e6e700c401ce0006000055bc",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401ce0006000055bc",
+        "fcs_hex": "21d3"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001ce00030100310700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401ce0006000055bc",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "ce",
+        "invoke_id": 14,
+        "result": "DATA",
+        "data_hex": "06000055bc"
+      },
+      "decoded_value": 21948
+    },
+    {
+      "id": "get_apparent_power_l3",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Apparent Power Phase L3 (0.01 VA) (Obis(a=1, b=0, c=69, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=69, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554110b243e6e600c001cf00030100450700ff02006e597e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "b243",
+        "info_hex": "e6e600c001cf00030100450700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cf00030100450700ff0200",
+        "fcs_hex": "6e59"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025530eddbe6e700c401cf000600002271d1ec7e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "eddb",
+        "info_hex": "e6e700c401cf000600002271",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cf000600002271",
+        "fcs_hex": "d1ec"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cf00030100450700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cf000600002271",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cf",
+        "invoke_id": 15,
+        "result": "DATA",
+        "data_hex": "0600002271"
+      },
+      "decoded_value": 8817
+    },
+    {
+      "id": "get_apparent_power_total",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Total Apparent Power (0.01 VA) (Obis(a=1, b=0, c=9, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=9, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554132a241e6e600c001c000030100090700ff020007767e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "32",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a241",
+        "info_hex": "e6e600c001c000030100090700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c000030100090700ff0200",
+        "fcs_hex": "0776"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025552f99be6e700c401c0000600012f542e697e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "52",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "f99b",
+        "info_hex": "e6e700c401c0000600012f54",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c0000600012f54",
+        "fcs_hex": "2e69"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c000030100090700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c0000600012f54",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c0",
+        "invoke_id": 0,
+        "result": "DATA",
+        "data_hex": "0600012f54"
+      },
+      "decoded_value": 77652
+    },
+    {
+      "id": "get_power_factor_total",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Total Power Factor (0.001) (Obis(a=1, b=0, c=13, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=13, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541549247e6e600c001c1000301000d0700ff02003a337e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "54",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9247",
+        "info_hex": "e6e600c001c1000301000d0700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c1000301000d0700ff0200",
+        "fcs_hex": "3a33"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0144102557445c9e6e700c401c1001002d9477c7e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "74",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "45c9",
+        "info_hex": "e6e700c401c1001002d9",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c1001002d9",
+        "fcs_hex": "477c"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c1000301000d0700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c1001002d9",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c1",
+        "invoke_id": 1,
+        "result": "DATA",
+        "data_hex": "1002d9"
+      },
+      "decoded_value": 729
+    },
+    {
+      "id": "get_power_factor_l1",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Power Factor Phase L1 (0.001) (Obis(a=1, b=0, c=33, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=33, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541768245e6e600c001c200030100210700ff02001d797e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "76",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "8245",
+        "info_hex": "e6e600c001c200030100210700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c200030100210700ff0200",
+        "fcs_hex": "1d79"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01441025596590de6e700c401c20010028ca3647e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "96",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "590d",
+        "info_hex": "e6e700c401c20010028c",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c20010028c",
+        "fcs_hex": "a364"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c200030100210700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c20010028c",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c2",
+        "invoke_id": 2,
+        "result": "DATA",
+        "data_hex": "10028c"
+      },
+      "decoded_value": 652
+    },
+    {
+      "id": "get_power_factor_l2",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Power Factor Phase L2 (0.001) (Obis(a=1, b=0, c=53, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=53, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554198f24be6e600c001c300030100350700ff0200907e7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "98",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "f24b",
+        "info_hex": "e6e600c001c300030100350700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c300030100350700ff0200",
+        "fcs_hex": "907e"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea014410255b825c5e6e700c401c3001003405f7a7e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "b8",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "25c5",
+        "info_hex": "e6e700c401c300100340",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c300100340",
+        "fcs_hex": "5f7a"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c300030100350700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c300100340",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c3",
+        "invoke_id": 3,
+        "result": "DATA",
+        "data_hex": "100340"
+      },
+      "decoded_value": 832
+    },
+    {
+      "id": "get_power_factor_l3",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Power Factor Phase L3 (0.001) (Obis(a=1, b=0, c=73, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=73, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541bae249e6e600c001c400030100490700ff0200832a7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "ba",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "e249",
+        "info_hex": "e6e600c001c400030100490700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c400030100490700ff0200",
+        "fcs_hex": "832a"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea014410255da3185e6e700c401c400100354261c7e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "da",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "3185",
+        "info_hex": "e6e700c401c400100354",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c400100354",
+        "fcs_hex": "261c"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c400030100490700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c400100354",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c4",
+        "invoke_id": 4,
+        "result": "DATA",
+        "data_hex": "100354"
+      },
+      "decoded_value": 852
+    },
+    {
+      "id": "get_frequency",
+      "session": "session_1_normal",
+      "category": "instantaneous",
+      "description": "GET Grid Frequency (0.01 Hz) (Obis(a=1, b=0, c=14, d=7, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=14, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541dcd24fe6e600c001c5000301000e0700ff020012617e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "dc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "d24f",
+        "info_hex": "e6e600c001c5000301000e0700ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c5000301000e0700ff0200",
+        "fcs_hex": "1261"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea014410255fc05c1e6e700c401c50012138b31197e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "fc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "05c1",
+        "info_hex": "e6e700c401c50012138b",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c50012138b",
+        "fcs_hex": "3119"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c5000301000e0700ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c50012138b",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c5",
+        "invoke_id": 5,
+        "result": "DATA",
+        "data_hex": "12138b"
+      },
+      "decoded_value": 5003
+    },
+    {
+      "id": "get_voltage_l1_scaler_unit",
+      "session": "session_1_normal",
+      "category": "scaler_unit",
+      "description": "GET Voltage L1 Scaler and Unit (Obis(a=1, b=0, c=32, d=7, e=0, f=255), attr 3)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=32, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 3
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541fec24de6e600c001c600030100200700ff0300bb3a7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "fe",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "c24d",
+        "info_hex": "e6e600c001c600030100200700ff0300",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c600030100200700ff0300",
+        "fcs_hex": "bb3a"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0174102551ed518e6e700c401c60002020ffe1623263e7e",
+        "frame_format": {
+          "hex": "a017",
+          "type": 10,
+          "segmented": false,
+          "length": 23
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "1e",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "d518",
+        "info_hex": "e6e700c401c60002020ffe1623",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c60002020ffe1623",
+        "fcs_hex": "263e"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c600030100200700ff0300",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c60002020ffe1623",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c6",
+        "invoke_id": 6,
+        "result": "DATA",
+        "data_hex": "02020ffe1623"
+      },
+      "decoded_value": [
+        -2,
+        35
+      ]
+    },
+    {
+      "id": "get_current_l1_scaler_unit",
+      "session": "session_1_normal",
+      "category": "scaler_unit",
+      "description": "GET Current L1 Scaler and Unit (Obis(a=1, b=0, c=31, d=7, e=0, f=255), attr 3)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=31, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 3
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554110b243e6e600c001c7000301001f0700ff030073957e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "b243",
+        "info_hex": "e6e600c001c7000301001f0700ff0300",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c7000301001f0700ff0300",
+        "fcs_hex": "7395"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01741025530a9d0e6e700c401c70002020ffd1621ef737e",
+        "frame_format": {
+          "hex": "a017",
+          "type": 10,
+          "segmented": false,
+          "length": 23
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a9d0",
+        "info_hex": "e6e700c401c70002020ffd1621",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c70002020ffd1621",
+        "fcs_hex": "ef73"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c7000301001f0700ff0300",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c70002020ffd1621",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c7",
+        "invoke_id": 7,
+        "result": "DATA",
+        "data_hex": "02020ffd1621"
+      },
+      "decoded_value": [
+        -3,
+        33
+      ]
+    },
+    {
+      "id": "get_active_power_total_scaler_unit",
+      "session": "session_1_normal",
+      "category": "scaler_unit",
+      "description": "GET Active Power Scaler and Unit (Obis(a=1, b=0, c=1, d=7, e=0, f=255), attr 3)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=7, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 3
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554132a241e6e600c001c800030100010700ff03002df27e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "32",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a241",
+        "info_hex": "e6e600c001c800030100010700ff0300",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c800030100010700ff0300",
+        "fcs_hex": "2df2"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01741025552bd90e6e700c401c80002020ffe161be0b37e",
+        "frame_format": {
+          "hex": "a017",
+          "type": 10,
+          "segmented": false,
+          "length": 23
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "52",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "bd90",
+        "info_hex": "e6e700c401c80002020ffe161b",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c80002020ffe161b",
+        "fcs_hex": "e0b3"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c800030100010700ff0300",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c80002020ffe161b",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c8",
+        "invoke_id": 8,
+        "result": "DATA",
+        "data_hex": "02020ffe161b"
+      },
+      "decoded_value": [
+        -2,
+        27
+      ]
+    },
+    {
+      "id": "get_active_energy_total_scaler_unit",
+      "session": "session_1_normal",
+      "category": "scaler_unit",
+      "description": "GET Active Energy Scaler and Unit (Obis(a=1, b=0, c=1, d=8, e=0, f=255), attr 3)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=8, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 3
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541549247e6e600c001c900030100010800ff030040cd7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "54",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9247",
+        "info_hex": "e6e600c001c900030100010800ff0300",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c900030100010800ff0300",
+        "fcs_hex": "40cd"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0174102557489d4e6e700c401c90002020f00161eddf97e",
+        "frame_format": {
+          "hex": "a017",
+          "type": 10,
+          "segmented": false,
+          "length": 23
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "74",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "89d4",
+        "info_hex": "e6e700c401c90002020f00161e",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c90002020f00161e",
+        "fcs_hex": "ddf9"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c900030100010800ff0300",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c90002020f00161e",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c9",
+        "invoke_id": 9,
+        "result": "DATA",
+        "data_hex": "02020f00161e"
+      },
+      "decoded_value": [
+        0,
+        30
+      ]
+    },
+    {
+      "id": "get_active_energy_total",
+      "session": "session_1_normal",
+      "category": "energy",
+      "description": "GET Total Active Energy (Wh) (Obis(a=1, b=0, c=1, d=8, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=8, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541768245e6e600c001ca00030100010800ff02002b2a7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "76",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "8245",
+        "info_hex": "e6e600c001ca00030100010800ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001ca00030100010800ff0200",
+        "fcs_hex": "2b2a"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025596d11be6e700c401ca0006022920de6cd47e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "96",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "d11b",
+        "info_hex": "e6e700c401ca0006022920de",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401ca0006022920de",
+        "fcs_hex": "6cd4"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001ca00030100010800ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401ca0006022920de",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "ca",
+        "invoke_id": 10,
+        "result": "DATA",
+        "data_hex": "06022920de"
+      },
+      "decoded_value": 36249822
+    },
+    {
+      "id": "get_active_energy_tariff1",
+      "session": "session_1_normal",
+      "category": "energy",
+      "description": "GET Active Energy Tariff 1 (Wh) (Obis(a=1, b=0, c=1, d=8, e=1, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=8, e=1, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554198f24be6e600c001cb00030100010801ff020001637e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "98",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "f24b",
+        "info_hex": "e6e600c001cb00030100010801ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cb00030100010801ff0200",
+        "fcs_hex": "0163"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255b8add3e6e700c401cb0006010128122d697e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "b8",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "add3",
+        "info_hex": "e6e700c401cb000601012812",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cb000601012812",
+        "fcs_hex": "2d69"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cb00030100010801ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cb000601012812",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cb",
+        "invoke_id": 11,
+        "result": "DATA",
+        "data_hex": "0601012812"
+      },
+      "decoded_value": 16853010
+    },
+    {
+      "id": "get_active_energy_tariff2",
+      "session": "session_1_normal",
+      "category": "energy",
+      "description": "GET Active Energy Tariff 2 (Wh) (Obis(a=1, b=0, c=1, d=8, e=2, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=1, b=0, c=1, d=8, e=2, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541bae249e6e600c001cc00030100010802ff02002ae67e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "ba",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "e249",
+        "info_hex": "e6e600c001cc00030100010802ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cc00030100010802ff0200",
+        "fcs_hex": "2ae6"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea016410255dab993e6e700c401cc00060127f8cc1f1b7e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "da",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "b993",
+        "info_hex": "e6e700c401cc00060127f8cc",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cc00060127f8cc",
+        "fcs_hex": "1f1b"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cc00030100010802ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cc00060127f8cc",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cc",
+        "invoke_id": 12,
+        "result": "DATA",
+        "data_hex": "060127f8cc"
+      },
+      "decoded_value": 19396812
+    },
+    {
+      "id": "get_active_tariff",
+      "session": "session_1_normal",
+      "category": "energy",
+      "description": "GET Current Active Tariff (Obis(a=0, b=0, c=96, d=14, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=14, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541dcd24fe6e600c001cd00010000600e00ff02008a287e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "dc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "d24f",
+        "info_hex": "e6e600c001cd00010000600e00ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cd00010000600e00ff0200",
+        "fcs_hex": "8a28"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea013410255fcd9f1e6e700c401cd001101a6cb7e",
+        "frame_format": {
+          "hex": "a013",
+          "type": 10,
+          "segmented": false,
+          "length": 19
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "fc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "d9f1",
+        "info_hex": "e6e700c401cd001101",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cd001101",
+        "fcs_hex": "a6cb"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cd00010000600e00ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cd001101",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cd",
+        "invoke_id": 13,
+        "result": "DATA",
+        "data_hex": "1101"
+      },
+      "decoded_value": 1
+    },
+    {
+      "id": "get_internal_temperature",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Internal Meter Temperature (C) (Obis(a=0, b=0, c=96, d=9, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=0, b=0, c=96, d=9, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541fec24de6e600c001ce00030000600900ff02001f7d7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "fe",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "c24d",
+        "info_hex": "e6e600c001ce00030000600900ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001ce00030000600900ff0200",
+        "fcs_hex": "1f7d"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0144102551e1905e6e700c401ce00100012d45d7e",
+        "frame_format": {
+          "hex": "a014",
+          "type": 10,
+          "segmented": false,
+          "length": 20
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "1e",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "1905",
+        "info_hex": "e6e700c401ce00100012",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401ce00100012",
+        "fcs_hex": "d45d"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001ce00030000600900ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401ce00100012",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "ce",
+        "invoke_id": 14,
+        "result": "DATA",
+        "data_hex": "100012"
+      },
+      "decoded_value": 18
+    },
+    {
+      "id": "get_uptime",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Meter Operating Time (seconds) (Obis(a=0, b=0, c=96, d=8, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 3,
+        "interface_name": "REGISTER",
+        "obis": "Obis(a=0, b=0, c=96, d=8, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554110b243e6e600c001cf00030000600800ff0200ca237e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "b243",
+        "info_hex": "e6e600c001cf00030000600800ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001cf00030000600800ff0200",
+        "fcs_hex": "ca23"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01641025530eddbe6e700c401cf0006078c216b0c877e",
+        "frame_format": {
+          "hex": "a016",
+          "type": 10,
+          "segmented": false,
+          "length": 22
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "eddb",
+        "info_hex": "e6e700c401cf0006078c216b",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401cf0006078c216b",
+        "fcs_hex": "0c87"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001cf00030000600800ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401cf0006078c216b",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "cf",
+        "invoke_id": 15,
+        "result": "DATA",
+        "data_hex": "06078c216b"
+      },
+      "decoded_value": 126624107
+    },
+    {
+      "id": "get_local_time",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Meter Internal Clock (DLMS datetime) (Obis(a=0, b=0, c=1, d=0, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 8,
+        "interface_name": "CLOCK",
+        "obis": "Obis(a=0, b=0, c=1, d=0, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554132a241e6e600c001c000080000010000ff0200f14f7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "32",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "a241",
+        "info_hex": "e6e600c001c000080000010000ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c000080000010000ff0200",
+        "fcs_hex": "f14f"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01f410255529dcae6e700c401c000090c07ea0a0a061317230000b400e08d7e",
+        "frame_format": {
+          "hex": "a01f",
+          "type": 10,
+          "segmented": false,
+          "length": 31
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "52",
+          "type": "I",
+          "send_seq": 1,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9dca",
+        "info_hex": "e6e700c401c000090c07ea0a0a061317230000b400",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c000090c07ea0a0a061317230000b400",
+        "fcs_hex": "e08d"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c000080000010000ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c000090c07ea0a0a061317230000b400",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c0",
+        "invoke_id": 0,
+        "result": "DATA",
+        "data_hex": "090c07ea0a0a061317230000b400"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "07ea0a0a061317230000b400",
+        "str": "\u0007\ufffd\n\n\u0006\u0013\u0017#\u0000\u0000\ufffd\u0000"
+      }
+    },
+    {
+      "id": "get_clock_synced",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Last Clock Sync Timestamp (Obis(a=0, b=0, c=96, d=2, e=12, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=2, e=12, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541549247e6e600c001c10001000060020cff0200712a7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "54",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 2,
+          "poll_final": 1
+        },
+        "hcs_hex": "9247",
+        "info_hex": "e6e600c001c10001000060020cff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c10001000060020cff0200",
+        "fcs_hex": "712a"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01f41025574a98ee6e700c401c100090c07ea0a060200310b0000b4008def7e",
+        "frame_format": {
+          "hex": "a01f",
+          "type": 10,
+          "segmented": false,
+          "length": 31
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "74",
+          "type": "I",
+          "send_seq": 2,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "a98e",
+        "info_hex": "e6e700c401c100090c07ea0a060200310b0000b400",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c100090c07ea0a060200310b0000b400",
+        "fcs_hex": "8def"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c10001000060020cff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c100090c07ea0a060200310b0000b400",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c1",
+        "invoke_id": 1,
+        "result": "DATA",
+        "data_hex": "090c07ea0a060200310b0000b400"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "07ea0a060200310b0000b400",
+        "str": "\u0007\ufffd\n\u0006\u0002\u00001\u000b\u0000\u0000\ufffd\u0000"
+      }
+    },
+    {
+      "id": "get_front_cover_opened",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Last Front Cover Opened Timestamp (Obis(a=0, b=0, c=96, d=20, e=1, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=20, e=1, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541768245e6e600c001c200010000601401ff020095d07e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "76",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 3,
+          "poll_final": 1
+        },
+        "hcs_hex": "8245",
+        "info_hex": "e6e600c001c200010000601401ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c200010000601401ff0200",
+        "fcs_hex": "95d0"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01f41025596b54ae6e700c401c200090c07e40717040b31110000b40051e87e",
+        "frame_format": {
+          "hex": "a01f",
+          "type": 10,
+          "segmented": false,
+          "length": 31
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "96",
+          "type": "I",
+          "send_seq": 3,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "b54a",
+        "info_hex": "e6e700c401c200090c07e40717040b31110000b400",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c200090c07e40717040b31110000b400",
+        "fcs_hex": "51e8"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c200010000601401ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c200090c07e40717040b31110000b400",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c2",
+        "invoke_id": 2,
+        "result": "DATA",
+        "data_hex": "090c07e40717040b31110000b400"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "07e40717040b31110000b400",
+        "str": "\u0007\ufffd\u0007\u0017\u0004\u000b1\u0011\u0000\u0000\ufffd\u0000"
+      }
+    },
+    {
+      "id": "get_terminals_cover_opened",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Last Terminals Cover Opened Timestamp (Obis(a=0, b=0, c=96, d=20, e=6, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=20, e=6, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554198f24be6e600c001c300010000601406ff020025d27e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "98",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 4,
+          "poll_final": 1
+        },
+        "hcs_hex": "f24b",
+        "info_hex": "e6e600c001c300010000601406ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c300010000601406ff0200",
+        "fcs_hex": "25d2"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01f410255b8c982e6e700c401c300090c07e60915030e172c0000b400f08e7e",
+        "frame_format": {
+          "hex": "a01f",
+          "type": 10,
+          "segmented": false,
+          "length": 31
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "b8",
+          "type": "I",
+          "send_seq": 4,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "c982",
+        "info_hex": "e6e700c401c300090c07e60915030e172c0000b400",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c300090c07e60915030e172c0000b400",
+        "fcs_hex": "f08e"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c300010000601406ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c300090c07e60915030e172c0000b400",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c3",
+        "invoke_id": 3,
+        "result": "DATA",
+        "data_hex": "090c07e60915030e172c0000b400"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "07e60915030e172c0000b400",
+        "str": "\u0007\ufffd\t\u0015\u0003\u000e\u0017,\u0000\u0000\ufffd\u0000"
+      }
+    },
+    {
+      "id": "get_magnetic_field_detected",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Last Magnetic Field Detection Timestamp (Obis(a=0, b=0, c=96, d=20, e=16, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=96, d=20, e=16, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541bae249e6e600c001c400010000601410ff0200f8fa7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "ba",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 5,
+          "poll_final": 1
+        },
+        "hcs_hex": "e249",
+        "info_hex": "e6e600c001c400010000601410ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c400010000601410ff0200",
+        "fcs_hex": "f8fa"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01f410255daddc2e6e700c401c400090c07e40717040b310f0000b400fa017e",
+        "frame_format": {
+          "hex": "a01f",
+          "type": 10,
+          "segmented": false,
+          "length": 31
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "da",
+          "type": "I",
+          "send_seq": 5,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "ddc2",
+        "info_hex": "e6e700c401c400090c07e40717040b310f0000b400",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c400090c07e40717040b310f0000b400",
+        "fcs_hex": "fa01"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c400010000601410ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c400090c07e40717040b310f0000b400",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c4",
+        "invoke_id": 4,
+        "result": "DATA",
+        "data_hex": "090c07e40717040b310f0000b400"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "07e40717040b310f0000b400",
+        "str": "\u0007\ufffd\u0007\u0017\u0004\u000b1\u000f\u0000\u0000\ufffd\u0000"
+      }
+    },
+    {
+      "id": "get_self_test",
+      "session": "session_1_normal",
+      "category": "diagnostic",
+      "description": "GET Meter Self-Test Error Flags (Obis(a=0, b=0, c=97, d=97, e=0, f=255), attr 2)",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=97, d=97, e=0, f=255)",
+        "obis_hex": "",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541dcd24fe6e600c001c500010000616100ff0200445b7e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "dc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 6,
+          "poll_final": 1
+        },
+        "hcs_hex": "d24f",
+        "info_hex": "e6e600c001c500010000616100ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c500010000616100ff0200",
+        "fcs_hex": "445b"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea019410255fc71bde6e700c401c5000906000000000000d9bb7e",
+        "frame_format": {
+          "hex": "a019",
+          "type": 10,
+          "segmented": false,
+          "length": 25
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "fc",
+          "type": "I",
+          "send_seq": 6,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "71bd",
+        "info_hex": "e6e700c401c5000906000000000000",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c5000906000000000000",
+        "fcs_hex": "d9bb"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c500010000616100ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c5000906000000000000",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c5",
+        "invoke_id": 5,
+        "result": "DATA",
+        "data_hex": "0906000000000000"
+      },
+      "decoded_value": {
+        "type": "bytes",
+        "hex": "000000000000",
+        "str": "\u0000\u0000\u0000\u0000\u0000\u0000"
+      }
+    },
+    {
+      "id": "get_error_nonexistent_obis",
+      "session": "session_1_normal",
+      "category": "negative_test",
+      "description": "GET request for non-existent OBIS (0.0.99.99.99.255) -> OBJECT_UNDEFINED",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "Obis(a=0, b=0, c=99, d=99, e=99, f=255)",
+        "attribute": 2
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a025541fec24de6e600c001c600010000636363ff020000077e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "fe",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 7,
+          "poll_final": 1
+        },
+        "hcs_hex": "c24d",
+        "info_hex": "e6e600c001c600010000636363ff0200",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c600010000636363ff0200",
+        "fcs_hex": "0007"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea0124102551e813ee6e700c401c60104c97a7e",
+        "frame_format": {
+          "hex": "a012",
+          "type": 10,
+          "segmented": false,
+          "length": 18
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "1e",
+          "type": "I",
+          "send_seq": 7,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "813e",
+        "info_hex": "e6e700c401c60104",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c60104",
+        "fcs_hex": "c97a"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c600010000636363ff0200",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c60104",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c6",
+        "invoke_id": 6,
+        "result": "DATA_ACCESS_RESULT_ERROR",
+        "error_code": 4
+      },
+      "decoded_value": "DataAccessResult.OBJECT_UNDEFINED (4)"
+    },
+    {
+      "id": "get_error_nonexistent_attribute",
+      "session": "session_1_normal",
+      "category": "negative_test",
+      "description": "GET request for non-existent attribute (attr 99) -> OBJECT_UNDEFINED",
+      "cosem": {
+        "interface_id": 1,
+        "interface_name": "DATA",
+        "obis": "0.0.42.0.0.255",
+        "attribute": 99
+      },
+      "request_hdlc": {
+        "raw_hex": "7ea01a02554110b243e6e600c001c7000100002a0000ff6300e8097e",
+        "frame_format": {
+          "hex": "a01a",
+          "type": 10,
+          "segmented": false,
+          "length": 26
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "b243",
+        "info_hex": "e6e600c001c7000100002a0000ff6300",
+        "llc_hex": "e6e600",
+        "apdu_hex": "c001c7000100002a0000ff6300",
+        "fcs_hex": "e809"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea01241025530fdf6e6e700c401c7010415207e",
+        "frame_format": {
+          "hex": "a012",
+          "type": 10,
+          "segmented": false,
+          "length": 18
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "fdf6",
+        "info_hex": "e6e700c401c70104",
+        "llc_hex": "e6e700",
+        "apdu_hex": "c401c70104",
+        "fcs_hex": "1520"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "c001c7000100002a0000ff6300",
+        "tag_hex": "c0",
+        "type": "GET_REQUEST",
+        "name": "GetRequestNormal"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "c401c70104",
+        "tag_hex": "c4",
+        "type": "GET_RESPONSE",
+        "name": "GetResponseNormal",
+        "invoke_id_priority_hex": "c7",
+        "invoke_id": 7,
+        "result": "DATA_ACCESS_RESULT_ERROR",
+        "error_code": 4
+      },
+      "decoded_value": "DataAccessResult.OBJECT_UNDEFINED (4)"
+    },
+    {
+      "id": "disc_disconnect",
+      "session": "session_1_normal",
+      "category": "session_management",
+      "description": "HDLC Disconnect (DISC -> UA)",
+      "request_hdlc": {
+        "raw_hex": "7ea00802554153e5917e",
+        "frame_format": {
+          "hex": "a008",
+          "type": 10,
+          "segmented": false,
+          "length": 8
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "53",
+          "type": "DISC",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": null,
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "e591"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea021410255737f4f8180140502008006020080070400000001080400000001ce6a7e",
+        "frame_format": {
+          "hex": "a021",
+          "type": 10,
+          "segmented": false,
+          "length": 33
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "73",
+          "type": "UA",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": "7f4f8180140502008006020080070400000001080400000001",
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "ce6a"
+      },
+      "request_apdu": null,
+      "response_apdu": null,
+      "decoded_value": null
+    },
+    {
+      "id": "snrm_connect_auth_session",
+      "session": "session_2_auth_fail",
+      "category": "session_management",
+      "description": "Establish HDLC connection for auth failure test (SNRM -> UA)",
+      "request_hdlc": {
+        "raw_hex": "7ea00802554193e9577e",
+        "frame_format": {
+          "hex": "a008",
+          "type": 10,
+          "segmented": false,
+          "length": 8
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "93",
+          "type": "SNRM",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": null,
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "e957"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea021410255737f4f8180140502008006020080070400000001080400000001ce6a7e",
+        "frame_format": {
+          "hex": "a021",
+          "type": 10,
+          "segmented": false,
+          "length": 33
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "73",
+          "type": "UA",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": "7f4f8180140502008006020080070400000001080400000001",
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "ce6a"
+      },
+      "request_apdu": null,
+      "response_apdu": null,
+      "decoded_value": null
+    },
+    {
+      "id": "aarq_associate_auth_failure",
+      "session": "session_2_auth_fail",
+      "category": "negative_test",
+      "description": "AARQ with wrong secret -> AARE REJECTED_PERMANENT (AUTHENTICATION_FAILED 13)",
+      "request_hdlc": {
+        "raw_hex": "7ea04f025541108410e6e6006040a109060760857405080101a60a0408757469b6a30b12588a0207808b0760857405080201ac08800677726f6e6721be10040e01000000065f1f040020525fffffcd7f7e",
+        "frame_format": {
+          "hex": "a04f",
+          "type": 10,
+          "segmented": false,
+          "length": 79
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "10",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 0,
+          "poll_final": 1
+        },
+        "hcs_hex": "8410",
+        "info_hex": "e6e6006040a109060760857405080101a60a0408757469b6a30b12588a0207808b0760857405080201ac08800677726f6e6721be10040e01000000065f1f040020525fffff",
+        "llc_hex": "e6e600",
+        "apdu_hex": "6040a109060760857405080101a60a0408757469b6a30b12588a0207808b0760857405080201ac08800677726f6e6721be10040e01000000065f1f040020525fffff",
+        "fcs_hex": "cd7f"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea02e410255301c55e6e700611fa109060760857405080101a203020101a305a10302010dbe0604040e0106016c717e",
+        "frame_format": {
+          "hex": "a02e",
+          "type": 10,
+          "segmented": false,
+          "length": 46
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "30",
+          "type": "I",
+          "send_seq": 0,
+          "recv_seq": 1,
+          "poll_final": 1
+        },
+        "hcs_hex": "1c55",
+        "info_hex": "e6e700611fa109060760857405080101a203020101a305a10302010dbe0604040e010601",
+        "llc_hex": "e6e700",
+        "apdu_hex": "611fa109060760857405080101a203020101a305a10302010dbe0604040e010601",
+        "fcs_hex": "6c71"
+      },
+      "request_apdu": {
+        "raw_apdu_hex": "6040a109060760857405080101a60a0408757469b6a30b12588a0207808b0760857405080201ac08800677726f6e6721be10040e01000000065f1f040020525fffff",
+        "tag_hex": "60",
+        "type": "AARQ",
+        "name": "ApplicationAssociationRequest"
+      },
+      "response_apdu": {
+        "raw_apdu_hex": "611fa109060760857405080101a203020101a305a10302010dbe0604040e010601",
+        "tag_hex": "61",
+        "type": "AARE",
+        "name": "ApplicationAssociationResponse"
+      },
+      "decoded_value": "AssociationResult.REJECTED_PERMANENT (1) / AUTHENTICATION_FAILED (13)"
+    },
+    {
+      "id": "disc_disconnect_auth_session",
+      "session": "session_2_auth_fail",
+      "category": "session_management",
+      "description": "HDLC Disconnect after auth fail (DISC -> UA)",
+      "request_hdlc": {
+        "raw_hex": "7ea00802554153e5917e",
+        "frame_format": {
+          "hex": "a008",
+          "type": 10,
+          "segmented": false,
+          "length": 8
+        },
+        "dest_address_hex": "0255",
+        "src_address_hex": "41",
+        "control": {
+          "hex": "53",
+          "type": "DISC",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": null,
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "e591"
+      },
+      "response_hdlc": {
+        "raw_hex": "7ea021410255737f4f8180140502008006020080070400000001080400000001ce6a7e",
+        "frame_format": {
+          "hex": "a021",
+          "type": 10,
+          "segmented": false,
+          "length": 33
+        },
+        "dest_address_hex": "41",
+        "src_address_hex": "0255",
+        "control": {
+          "hex": "73",
+          "type": "UA",
+          "poll_final": 1
+        },
+        "hcs_hex": null,
+        "info_hex": "7f4f8180140502008006020080070400000001080400000001",
+        "llc_hex": null,
+        "apdu_hex": null,
+        "fcs_hex": "ce6a"
+      },
+      "request_apdu": null,
+      "response_apdu": null,
+      "decoded_value": null
+    }
+  ]
+}
