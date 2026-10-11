@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections.abc import Callable
 from typing import Any, Self
 
@@ -27,6 +28,8 @@ from microdlms.types import (
     SessionEvent,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class AsyncMeterClient:
     """High-level asynchronous client for reading DLMS/COSEM meters over serial or TCP sockets."""
@@ -43,6 +46,7 @@ class AsyncMeterClient:
         system_title: bytes | None = None,
         retries: int = 3,
         retry_delay: float = 0.0,
+        echo_filter: bool = False,
     ) -> None:
         self.port = port
         self.baudrate = baudrate
@@ -54,6 +58,7 @@ class AsyncMeterClient:
         self.system_title = system_title
         self.retries = retries
         self.retry_delay = retry_delay
+        self.echo_filter = echo_filter
 
         self._session = DlmsSession(
             client_address=client_logical_address,
@@ -64,6 +69,7 @@ class AsyncMeterClient:
         self._reader: asyncio.StreamReader | None = None
         self._writer: Any = None
         self._event_queue: list[SessionEvent] = []
+        self._pending_echo: bytearray = bytearray()
 
     @property
     def is_connected(self) -> bool:
@@ -81,6 +87,8 @@ class AsyncMeterClient:
             if self.is_connected:
                 return
             await self.disconnect()
+
+        self._pending_echo.clear()
 
         try:
             self._reader, self._writer = await serialx.open_serial_connection(
@@ -165,6 +173,7 @@ class AsyncMeterClient:
             self._event_queue = [
                 event for event in self._event_queue if not isinstance(event, ProtocolErrorEvent)
             ]
+        self._pending_echo.clear()
 
     def _raise_get_error(
         self,
@@ -175,6 +184,7 @@ class AsyncMeterClient:
     ) -> None:
         """Raise primary or current communication error if disconnected or out of retries."""
         if not self.is_connected or attempt == effective_retries:
+            self._pending_echo.clear()
             final_error = primary_error if primary_error is not None else error
             raise final_error from error
 
@@ -222,11 +232,14 @@ class AsyncMeterClient:
                 self._writer = None
                 self._reader = None
             self._event_queue.clear()
+            self._pending_echo.clear()
 
     async def _flush_outbound(self) -> None:
         """Transmit any pending bytes from the session outbound buffer."""
         outbound_bytes = self._session.data_to_send()
         if outbound_bytes and self._writer is not None:
+            if self.echo_filter:
+                self._pending_echo = bytearray(outbound_bytes)
             self._writer.write(outbound_bytes)
             await self._writer.drain()
 
@@ -250,6 +263,28 @@ class AsyncMeterClient:
             index += 1
         return None
 
+    def _strip_pending_echo(self, data: bytes) -> bytes:
+        """Strip matching transmitted echo prefix from incoming reader bytes."""
+        if not self.echo_filter or not self._pending_echo or not data:
+            return data
+
+        matching_count = 0
+        for data_byte, echo_byte in zip(data, self._pending_echo, strict=False):
+            if data_byte == echo_byte:
+                matching_count += 1
+            else:
+                break
+
+        if matching_count > 0:
+            del self._pending_echo[:matching_count]
+            data = data[matching_count:]
+            _LOGGER.debug("Discarded %d echo bytes", matching_count)
+
+        if not self._pending_echo or len(data) > 0:
+            self._pending_echo.clear()
+
+        return data
+
     async def _wait_for_event(
         self,
         *expected_types: type[SessionEvent],
@@ -272,7 +307,9 @@ class AsyncMeterClient:
                     if not data:
                         raise CommunicationError("Connection closed by peer / EOF encountered")
 
-                    self._event_queue.extend(self._session.receive_bytes(data))
+                    data = self._strip_pending_echo(data)
+                    if data:
+                        self._event_queue.extend(self._session.receive_bytes(data))
                     matching = self._extract_matching_event(expected_types, predicate)
                     if matching is not None:
                         return matching

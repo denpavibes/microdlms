@@ -82,6 +82,10 @@ prek run --all-files
 - **Latency**: Each attribute read request-response exchange takes between 0.5 and 1.5 seconds over physical optical links.
 - **Exclusive Access**: Serial connections and optical probes are strictly exclusive. Only one active session may use the serial link or TCP socket proxy at a time.
 - **Frame Slicing**: Optical links frequently fragment or concatenate byte streams. Codecs must handle partial frames across multiple chunk arrivals and cleanly identify frame boundaries (`0x7E` framing flags).
+- **Optical Echo Filtering**: Half-duplex optical probes often reflect transmitted TX bytes back to the receiver (RX echo). `AsyncMeterClient(echo_filter=True)` provides prefix-based echo filtering:
+  - Buffers transmitted frames in `_pending_echo`.
+  - Discards matching echo prefixes from incoming chunks, logging discarded counts at `logging.DEBUG` level.
+  - Clears `_pending_echo` on byte mismatches, echo exhaustion, disconnects, reconnects, or retries to avoid dropping valid meter response data.
 
 ### 4.2 Sequence Tracking & Protocol Fields
 - **HDLC Sequence Counters**: $N(S)$ (send sequence number) and $N(R)$ (receive sequence number) are cyclic counters modulo 8 ($0..7$).

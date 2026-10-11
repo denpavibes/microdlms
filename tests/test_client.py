@@ -59,6 +59,21 @@ class MockReader:
         self.queue.put_nowait(data)
 
 
+class EchoingMockWriter(MockWriter):
+    """MockWriter that immediately echoes written bytes into MockReader followed by response."""
+
+    def __init__(self, reader: MockReader, responses: list[bytes] | None = None) -> None:
+        super().__init__()
+        self.reader = reader
+        self.responses = list(responses) if responses is not None else []
+
+    def write(self, data: bytes) -> None:
+        super().write(data)
+        self.reader.feed_bytes(bytes(data))
+        if self.responses:
+            self.reader.feed_bytes(self.responses.pop(0))
+
+
 @pytest.fixture
 def mock_serial_pair() -> tuple[MockReader, MockWriter]:
     return MockReader(), MockWriter()
@@ -731,3 +746,398 @@ async def test_client_get_stale_data_access_error_ignored(
 
     value = await client.get(attribute)
     assert value == "41920942"
+
+
+async def test_client_echo_filter_exact_echo_stripped_lifecycle(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Verify optical probe echoes are stripped across connect, associate, get, and disconnect."""
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=0, recv_seq=1),
+        information=wrap_llc(aare_apdu),
+    )
+    get_response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+    get_response_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=1, recv_seq=2),
+        information=wrap_llc(get_response_apdu),
+    )
+    disconnect_ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+
+    reader = MockReader()
+    writer = EchoingMockWriter(
+        reader, [ua_frame, aare_frame, get_response_frame, disconnect_ua_frame]
+    )
+
+    with (
+        patch("serialx.open_serial_connection", return_value=(reader, writer)),
+        caplog.at_level("DEBUG"),
+    ):
+        client = AsyncMeterClient(
+            port="COM1",
+            password="111111",
+            timeout=2.0,
+            echo_filter=True,
+        )
+        assert client.echo_filter is True
+        assert len(client._pending_echo) == 0
+
+        await client.connect()
+        assert client.is_connected is True
+        assert len(client._pending_echo) == 0
+
+        attribute = CosemAttribute(
+            interface=InterfaceClass.DATA,
+            obis=ObisCode(0, 0, 96, 1, 0, 255),
+            attribute=2,
+        )
+        value = await client.get(attribute)
+        assert value == "41920942"
+        assert len(client._pending_echo) == 0
+
+        await client.disconnect()
+        assert client.is_connected is False
+        assert len(client._pending_echo) == 0
+
+    assert "Discarded" in caplog.text
+
+
+async def test_client_echo_filter_combined_chunk_exact_echo_stripped(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify that exact echo prepended to valid response in a single read chunk is stripped."""
+    reader, writer = mock_serial_pair
+
+    # Pre-build frames
+    # SNRM outbound frame for client_logical=32, server_logical=1, server_physical=42
+    snrm_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=0x93,
+    )
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+
+    # Deliver combined chunk (exact echo + meter response) in one read
+    reader.feed_bytes(snrm_frame + ua_frame)
+
+    # Association frames
+    from microdlms.apdu import encode_aarq
+
+    aarq_apdu = encode_aarq(password="111111")
+    aarq_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=make_i_control(send_seq=0, recv_seq=0),
+        information=wrap_llc(aarq_apdu),
+    )
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=0, recv_seq=1),
+        information=wrap_llc(aare_apdu),
+    )
+    reader.feed_bytes(aarq_frame + aare_frame)
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        client = AsyncMeterClient(
+            port="COM1",
+            password="111111",
+            timeout=2.0,
+            echo_filter=True,
+        )
+        await client.connect()
+        assert client.is_connected is True
+
+
+async def test_client_echo_filter_partial_and_mismatched_echo(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify partial or mismatched echoes clear echo buffer and preserve valid response frames."""
+    reader, writer = mock_serial_pair
+
+    # 1. Partial echo in single chunk for connect:
+    snrm_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=0x93,
+    )
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    # Feed partial echo (first 4 bytes of SNRM) immediately followed by UA frame
+    reader.feed_bytes(snrm_frame[:4] + ua_frame)
+
+    # 2. Association: partial echo delivered in separate read chunk, followed by AARE frame
+    from microdlms.apdu import encode_aarq
+
+    aarq_apdu = encode_aarq(password="111111")
+    aarq_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=make_i_control(send_seq=0, recv_seq=0),
+        information=wrap_llc(aarq_apdu),
+    )
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=0, recv_seq=1),
+        information=wrap_llc(aare_apdu),
+    )
+    # Chunk 1: partial echo (5 bytes)
+    reader.feed_bytes(aarq_frame[:5])
+    # Chunk 2: full AARE response (first byte 0x7E mismatches 6th byte of AARQ frame)
+    reader.feed_bytes(aare_frame)
+
+    # 3. Get attribute: completely mismatched echo bytes (e.g. noise prefix)
+    get_response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+    get_response_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=1, recv_seq=2),
+        information=wrap_llc(get_response_apdu),
+    )
+    # Noise mismatch: 3 garbage bytes followed by get_response_frame
+    reader.feed_bytes(b"\x00\x01\x02" + get_response_frame)
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        client = AsyncMeterClient(
+            port="COM1",
+            password="111111",
+            timeout=2.0,
+            echo_filter=True,
+        )
+        await client.connect()
+        assert client.is_connected is True
+
+        attribute = CosemAttribute(
+            interface=InterfaceClass.DATA,
+            obis=ObisCode(0, 0, 96, 1, 0, 255),
+            attribute=2,
+        )
+        value = await client.get(attribute)
+        assert value == "41920942"
+
+
+async def test_client_echo_filter_retry_recovery() -> None:
+    """Verify that retries recover from corrupted frame when echo filter is enabled."""
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=0, recv_seq=1),
+        information=wrap_llc(aare_apdu),
+    )
+    # Attempt 0: corrupt frame (bad FCS)
+    corrupt_frame = b"\x7e\xa0\x08\x02\x55\x41\x93\x00\x00\x7e"
+    # Attempt 1: successful response
+    get_response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+    get_response_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=1, recv_seq=2),
+        information=wrap_llc(get_response_apdu),
+    )
+
+    reader = MockReader()
+    writer = EchoingMockWriter(reader, [ua_frame, aare_frame, corrupt_frame, get_response_frame])
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        client = AsyncMeterClient(
+            port="COM1",
+            timeout=1.0,
+            retries=2,
+            retry_delay=0.01,
+            echo_filter=True,
+        )
+        await client.connect()
+
+        attribute = CosemAttribute(
+            interface=InterfaceClass.DATA,
+            obis=ObisCode(0, 0, 96, 1, 0, 255),
+            attribute=2,
+        )
+        value = await client.get(attribute)
+        assert value == "41920942"
+        assert len(client._pending_echo) == 0
+
+
+async def test_client_default_echo_filter_false_preserves_raw_stream(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify default echo_filter=False preserves raw stream and fails on optical reflection."""
+    reader, writer = mock_serial_pair
+    client = AsyncMeterClient(port="COM1")
+    assert client.echo_filter is False
+    assert len(client._pending_echo) == 0
+
+    client._writer = writer
+    client._session.initiate_connect()
+    await client._flush_outbound()
+
+    # Outbound bytes transmitted, but _pending_echo remains empty when echo_filter is False
+    assert len(client._pending_echo) == 0
+    assert len(writer.written_bytes) > 0
+
+    # _strip_pending_echo returns raw data unchanged
+    test_stream = b"\x7e\xa0\x08\x01\x02\x03\x7e"
+    assert client._strip_pending_echo(test_stream) == test_stream
+
+    # Connect with echoing writer fails when echo_filter=False because raw echo breaks HDLC
+    echo_reader = MockReader()
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    echoing_writer = EchoingMockWriter(echo_reader, [ua_frame])
+    with (
+        patch("serialx.open_serial_connection", return_value=(echo_reader, echoing_writer)),
+        pytest.raises(CommunicationError, match="HDLC connect failed"),
+    ):
+        raw_client = AsyncMeterClient(port="COM1", echo_filter=False, timeout=1.0)
+        await raw_client.connect()
+
+
+async def test_client_pending_echo_buffer_cleared_on_disconnect_and_reconnect() -> None:
+    """Verify pending echo buffer is cleared during disconnect, reconnect, and retry preparation."""
+    client = AsyncMeterClient(port="COM1", echo_filter=True)
+
+    # 1. Retry preparation clears buffer on both attempt 0 and retry attempt > 0
+    client._pending_echo = bytearray(b"stale_bytes")
+    await client._prepare_next_retry(attempt=0, delay=0.0)
+    assert len(client._pending_echo) == 0
+
+    client._pending_echo = bytearray(b"stale_bytes")
+    await client._prepare_next_retry(attempt=1, delay=0.0)
+    assert len(client._pending_echo) == 0
+
+    # 2. Disconnect clears buffer
+    client._pending_echo = bytearray(b"stale_bytes")
+    await client.disconnect()
+    assert len(client._pending_echo) == 0
+
+    # 3. Connection opening failure clears buffer
+    client._pending_echo = bytearray(b"stale_bytes")
+    with (
+        patch("serialx.open_serial_connection", side_effect=OSError("Serial open failed")),
+        pytest.raises(CommunicationError, match="Serial open failed"),
+    ):
+        await client.connect()
+    assert len(client._pending_echo) == 0
+
+    # 4. Reconnect path with existing writer clears buffer and connects
+    reader = MockReader()
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        encode_address(32),
+        encode_address(1, 42),
+        make_i_control(0, 1),
+        wrap_llc(aare_apdu),
+    )
+    writer = EchoingMockWriter(reader, [ua_frame, aare_frame])
+    client._writer = writer
+    client._session._state = SessionState.DISCONNECTED
+    client._pending_echo = bytearray(b"stale_bytes")
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        await client.connect()
+        assert client.is_connected is True
+        assert len(client._pending_echo) == 0
+
+
+async def test_client_echo_filter_multi_chunk_fragmentation() -> None:
+    """Verify that exact echo split across multiple arbitrary read chunks is completely stripped."""
+    snrm_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=0x93,
+    )
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+
+    from microdlms.apdu import encode_aarq
+
+    aarq_apdu = encode_aarq(password="111111")
+    aarq_frame = build_frame(
+        dest_address=encode_address(1, 42),
+        src_address=encode_address(32),
+        control=make_i_control(send_seq=0, recv_seq=0),
+        information=wrap_llc(aarq_apdu),
+    )
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    aare_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=0, recv_seq=1),
+        information=wrap_llc(aare_apdu),
+    )
+
+    get_response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+    get_response_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=1, recv_seq=2),
+        information=wrap_llc(get_response_apdu),
+    )
+
+    reader = MockReader()
+    writer = MockWriter()
+
+    # Feed SNRM echo in 3 chunks, followed by UA frame
+    reader.feed_bytes(snrm_frame[:3])
+    reader.feed_bytes(snrm_frame[3:6])
+    reader.feed_bytes(snrm_frame[6:])
+    reader.feed_bytes(ua_frame)
+
+    # Feed AARQ echo in 3 chunks, followed by AARE frame
+    reader.feed_bytes(aarq_frame[:4])
+    reader.feed_bytes(aarq_frame[4:8])
+    reader.feed_bytes(aarq_frame[8:])
+    reader.feed_bytes(aare_frame)
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        client = AsyncMeterClient(
+            port="COM1",
+            password="111111",
+            timeout=2.0,
+            echo_filter=True,
+        )
+        await client.connect()
+        assert client.is_connected is True
+
+        # Pre-feed get echo in 2 chunks followed by get response
+        get_request_frame = build_frame(
+            dest_address=encode_address(1, 42),
+            src_address=encode_address(32),
+            control=make_i_control(send_seq=1, recv_seq=1),
+            information=wrap_llc(bytes.fromhex("c001c000010000600100ff02")),
+        )
+        reader.feed_bytes(get_request_frame[:5])
+        reader.feed_bytes(get_request_frame[5:])
+        reader.feed_bytes(get_response_frame)
+
+        attribute = CosemAttribute(
+            interface=InterfaceClass.DATA,
+            obis=ObisCode(0, 0, 96, 1, 0, 255),
+            attribute=2,
+        )
+        value = await client.get(attribute)
+        assert value == "41920942"
+        assert len(client._pending_echo) == 0
+
+        # Boundary check: passing empty bytes to _strip_pending_echo is a safe no-op
+        assert client._strip_pending_echo(b"") == b""

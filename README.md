@@ -26,6 +26,7 @@ A lightweight, zero-core-dependency Python 3.14+ library for read-only DLMS/COSE
   - `ObisCode`: 6-group OBIS identifier (`A.B.C.D.E.F`) with dot-string parsing and byte serialization.
   - `ScalerUnit`: Scales raw meter values using decimal exponents and unit metadata.
   - `CosemDateTime`: Parses DLMS 12-byte octet strings into timezone-aware `datetime.datetime` objects.
+- **Optical Probe Echo Filtering**: Optional hardware echo filter (`echo_filter=True`) in `AsyncMeterClient` stripping local optical reflection from half-duplex IR probes before stream parsing.
 - **Dual Error Model**:
   - Sans-I/O layer yields typed event objects preserving stream continuity.
   - Client layer translates errors into structured Python exceptions (`CommunicationError`, `AuthenticationError`, `DataAccessError`).
@@ -113,6 +114,7 @@ async def main() -> None:
         server_logical_address=1,
         server_physical_address=42,
         timeout=10.0,
+        echo_filter=False,  # Set to True for half-duplex optical probes echoing TX
     )
 
     async with client:
