@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from enum import IntEnum
 from typing import Any, Final
 
 from microdlms.axdr import decode_axdr, encode_axdr_length
-from microdlms.const import ApduTags
 from microdlms.exceptions import ProtocolError
 from microdlms.obis import CosemAttribute
 from microdlms.types import AssociationResult, DataAccessResult
@@ -47,6 +47,17 @@ ACCESS_SELECTION_NONE: Final = 0x00
 DEFAULT_PRIORITY: Final = 0xC0
 INVOKE_ID_MASK: Final = 0x0F
 PRIORITY_MASK: Final = 0xF0
+
+
+class ApduTags(IntEnum):
+    """DLMS/COSEM Application Protocol Data Unit (APDU) tags."""
+
+    AARQ = 0x60
+    AARE = 0x61
+    RLRQ = 0x62
+    RLRE = 0x63
+    GET_REQUEST = 0xC0
+    GET_RESPONSE = 0xC4
 
 
 def encode_aarq(
@@ -225,7 +236,13 @@ def decode_get_response_normal(apdu: bytes) -> tuple[int, bool, Any]:
 def encode_rlrq(reason: int = RELEASE_REASON_NORMAL) -> bytes:
     """Encode an ACSE Release Request (RLRQ) APDU."""
     return bytes(
-        [ApduTags.RLRQ, RLRQ_LENGTH, BER_TAG_RELEASE_REASON, BER_LENGTH_SINGLE_BYTE, reason]
+        [
+            ApduTags.RLRQ,
+            RLRQ_LENGTH,
+            BER_TAG_RELEASE_REASON,
+            BER_LENGTH_SINGLE_BYTE,
+            reason,
+        ]
     )
 
 

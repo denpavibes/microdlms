@@ -7,13 +7,9 @@ import datetime
 import pytest
 
 from microdlms.apdu import RELEASE_REASON_NORMAL
-from microdlms.const import (
-    DEFAULT_CLIENT_LOGICAL_ADDRESS,
-    DEFAULT_SERVER_LOGICAL_ADDRESS,
-    HdlcControls,
-)
+from microdlms.const import DEFAULT_CLIENT_LOGICAL_ADDRESS, DEFAULT_SERVER_LOGICAL_ADDRESS
 from microdlms.exceptions import ProtocolError
-from microdlms.hdlc import build_frame, encode_address, make_i_control, wrap_llc
+from microdlms.hdlc import HdlcControls, build_frame, encode_address, make_i_control, wrap_llc
 from microdlms.obis import DEFAULT_COSEM_ATTRIBUTE_ID, CosemAttribute, ObisCode
 from microdlms.session import DlmsSession, SessionState
 from microdlms.types import (

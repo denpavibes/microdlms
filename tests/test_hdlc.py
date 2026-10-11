@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from microdlms.const import HdlcControls
 from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import (
     HDLC_FLAG,
     LLC_REQ_HEADER,
     LLC_RESP_HEADER,
+    HdlcControls,
     build_frame,
     calculate_crc16,
     check_crc16,

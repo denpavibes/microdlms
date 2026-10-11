@@ -14,6 +14,7 @@ from microdlms.apdu import (
     RESULT_TYPE_DATA_ACCESS_RESULT,
     RESULT_TYPE_SUCCESS,
     RLRQ_LENGTH,
+    ApduTags,
     decode_aare,
     decode_get_response_normal,
     decode_rlre,
@@ -21,7 +22,6 @@ from microdlms.apdu import (
     encode_get_request_normal,
     encode_rlrq,
 )
-from microdlms.const import ApduTags
 from microdlms.exceptions import ProtocolError
 from microdlms.obis import DEFAULT_COSEM_ATTRIBUTE_ID, CosemAttribute, ObisCode
 from microdlms.types import AssociationResult, DataAccessResult, InterfaceClass

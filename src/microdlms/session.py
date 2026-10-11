@@ -6,6 +6,7 @@ from enum import Enum, auto
 from typing import Final
 
 from microdlms.apdu import (
+    ApduTags,
     decode_aare,
     decode_get_response_normal,
     decode_rlre,
@@ -13,14 +14,10 @@ from microdlms.apdu import (
     encode_get_request_normal,
     encode_rlrq,
 )
-from microdlms.const import (
-    DEFAULT_CLIENT_LOGICAL_ADDRESS,
-    DEFAULT_SERVER_LOGICAL_ADDRESS,
-    ApduTags,
-    HdlcControls,
-)
+from microdlms.const import DEFAULT_CLIENT_LOGICAL_ADDRESS, DEFAULT_SERVER_LOGICAL_ADDRESS
 from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import (
+    HdlcControls,
     HdlcFrame,
     build_frame,
     encode_address,

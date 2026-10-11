@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
+from microdlms.apdu import ApduTags
 from microdlms.axdr import AxdrTags, decode_axdr
 from microdlms.client import AsyncMeterClient
-from microdlms.const import (
-    DEFAULT_CLIENT_LOGICAL_ADDRESS,
-    DEFAULT_SERVER_LOGICAL_ADDRESS,
-    ApduTags,
-    HdlcControls,
-)
+from microdlms.const import DEFAULT_CLIENT_LOGICAL_ADDRESS, DEFAULT_SERVER_LOGICAL_ADDRESS
 from microdlms.exceptions import (
     AuthenticationError,
     CommunicationError,
@@ -17,6 +13,7 @@ from microdlms.exceptions import (
     MicrodlmsError,
     ProtocolError,
 )
+from microdlms.hdlc import HdlcControls
 from microdlms.obis import CosemAttribute, ObisCode
 from microdlms.session import DlmsSession, SessionState
 from microdlms.types import (

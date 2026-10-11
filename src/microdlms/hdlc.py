@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import IntEnum
 from typing import Final
 
 from microdlms.exceptions import ProtocolError
@@ -30,6 +31,18 @@ HDLC_CONTROL_S_FRAME_MASK: Final = 0x03
 HDLC_CONTROL_S_FRAME_VALUE: Final = 0x01
 HDLC_SEQUENCE_MASK: Final = 0x07
 HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
+
+
+class HdlcControls(IntEnum):
+    """HDLC unnumbered frame control byte values."""
+
+    SNRM = 0x93
+    DISC = 0x53
+    UA_FINAL = 0x73
+    UA = 0x63
+    DM_FINAL = 0x1F
+    DM = 0x0F
+
 
 # Precomputed CRC-16-CCITT / X.25 lookup table (polynomial 0x8408 reversed)
 # fmt: off

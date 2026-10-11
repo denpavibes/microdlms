@@ -9,13 +9,12 @@ from unittest.mock import patch
 import pytest
 
 from microdlms.client import AsyncMeterClient
-from microdlms.const import HdlcControls
 from microdlms.exceptions import (
     AuthenticationError,
     CommunicationError,
     DataAccessError,
 )
-from microdlms.hdlc import build_frame, encode_address, make_i_control, wrap_llc
+from microdlms.hdlc import HdlcControls, build_frame, encode_address, make_i_control, wrap_llc
 from microdlms.obis import CosemAttribute, ObisCode
 from microdlms.session import SessionState
 from microdlms.types import (
