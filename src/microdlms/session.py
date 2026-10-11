@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum, auto
+from functools import cached_property
 from typing import Final
 
 from microdlms.apdu import (
@@ -245,13 +247,19 @@ class DlmsSession:
             return ProtocolErrorEvent("Empty APDU in received I-frame")
 
         tag = apdu[0]
-        if tag == ApduTags.AARE:
-            return self._handle_aare_apdu(apdu)
-        if tag == ApduTags.GET_RESPONSE:
-            return self._handle_get_response_apdu(apdu)
-        if tag == ApduTags.RLRE:
-            return self._handle_rlre_apdu(apdu)
-        return ProtocolErrorEvent(f"Unsupported APDU tag 0x{tag:02X}")
+        if not (handler := self._iframe_handlers.get(tag)):
+            return ProtocolErrorEvent(f"Unsupported APDU tag 0x{tag:02X}")
+
+        return handler(apdu)
+
+    @cached_property
+    def _iframe_handlers(self) -> dict[int, Callable[[bytes], SessionEvent]]:
+        """I-frame handler lookup table."""
+        return {
+            ApduTags.AARE: self._handle_aare_apdu,
+            ApduTags.GET_RESPONSE: self._handle_get_response_apdu,
+            ApduTags.RLRE: self._handle_rlre_apdu,
+        }
 
     def _handle_uframe(self, frame: HdlcFrame) -> SessionEvent:
         """Process incoming unnumbered control frame (UA, DM, DISC)."""
