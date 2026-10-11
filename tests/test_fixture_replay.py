@@ -71,7 +71,10 @@ def test_replay_individual_exchange_frames(exchange: dict[str, Any]) -> None:
         session.initiate_connect()
         session.data_to_send()
         session.receive_bytes(meter_fixtures.SNRM_CONNECT_RESP_HDLC)
-        session.initiate_association(password="111111")
+        session.initiate_association(
+            password="111111",
+            system_title=bytes.fromhex("7574691cc56a7264"),
+        )
         outbound_bytes = session.data_to_send()
         assert outbound_bytes == request_hdlc, (
             f"{exchange_id} request mismatch: {outbound_bytes.hex()} vs {request_hdlc.hex()}"
@@ -151,7 +154,10 @@ def _replay_lifecycle_exchange(session: DlmsSession, exchange: dict[str, Any]) -
         session.initiate_connect()
         expected_type: type = ConnectedEvent
     elif exchange_id == "aarq_associate_success":
-        session.initiate_association(password="111111")
+        session.initiate_association(
+            password="111111",
+            system_title=bytes.fromhex("7574691cc56a7264"),
+        )
         expected_type = AssociatedEvent
     elif exchange_id in ("disc_disconnect", "disc_disconnect_auth_session"):
         session.initiate_disconnect()

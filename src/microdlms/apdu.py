@@ -10,7 +10,7 @@ from microdlms.exceptions import ProtocolError
 from microdlms.obis import CosemAttribute
 from microdlms.types import AssociationResult, DataAccessResult
 
-DEFAULT_SYSTEM_TITLE: Final = bytes.fromhex("7574691cc56a7264")
+DEFAULT_SYSTEM_TITLE: Final = b"MDL\x00\x00\x00\x00\x00"
 SYSTEM_TITLE_LENGTH: Final = 8
 
 APP_CONTEXT_LN_NO_CIPHER: Final = bytes.fromhex("060760857405080101")

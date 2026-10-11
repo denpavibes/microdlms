@@ -29,6 +29,8 @@ This document outlines architecture principles, operational standards, hardware 
 - **Zero Copyright / Clean-Room Contamination**:
   - You MUST NOT copy, adapt, or replicate verbatim code, class hierarchies, internal structures, or method signatures from any non-OSI DLMS projects.
   - The codebase must be an independent, clean-room implementation based strictly on the open DLMS Green Book / Blue Book standards and the captured physical meter frames provided in `tests/`.
+- **Post-Architectural Clean-Room Validation**:
+  - Following any significant architectural change, addition of protocol layers, or major codec restructuring (such as work performed by `DeepCoder`), execute the `clean-room-validator` subagent to audit against reference libraries and verify clean-room compliance.
 - **Open Standards**: Base protocol implementations on official open DLMS Blue Book and Green Book specifications.
 - **Test Vectors**: Validate behavior against verified physical meter frame captures in `tests/meter_fixtures.py`.
 

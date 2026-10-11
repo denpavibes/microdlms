@@ -29,7 +29,12 @@ from microdlms.types import AssociationResult, DataAccessResult, InterfaceClass
 
 def test_aarq_encoding() -> None:
     """Test AARQ encoding with LLS password, without password, and with custom system titles."""
-    system_title = bytes.fromhex("7574691cc56a7264")
+    system_title = b"MDL\x01\x02\x03\x04\x05"
+
+    # Default system title
+    aarq_default_title = encode_aarq(password="111111")
+    assert aarq_default_title[0] == ApduTags.AARQ
+    assert b"MDL\x00\x00\x00\x00\x00" in aarq_default_title
 
     # With LLS password (string)
     aarq_with_password = encode_aarq(password="111111", system_title=system_title)
