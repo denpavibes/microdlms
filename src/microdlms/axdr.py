@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from microdlms.exceptions import ProtocolError
 
@@ -33,16 +33,23 @@ class AxdrTags(IntEnum):
     ENUM = 0x16
 
 
-_INTEGER_TAG_SPECS: dict[int, tuple[int, bool]] = {
-    AxdrTags.DOUBLE_LONG: (4, True),
-    AxdrTags.DOUBLE_LONG_UNSIGNED: (4, False),
-    AxdrTags.INTEGER: (1, True),
-    AxdrTags.LONG: (2, True),
-    AxdrTags.UNSIGNED: (1, False),
-    AxdrTags.LONG_UNSIGNED: (2, False),
-    AxdrTags.LONG64: (8, True),
-    AxdrTags.LONG64_UNSIGNED: (8, False),
-    AxdrTags.ENUM: (1, False),
+class TagSpec(NamedTuple):
+    """Represents a tag specification."""
+
+    byte_length: int
+    is_signed: bool
+
+
+_INTEGER_TAG_SPECS: dict[int, TagSpec] = {
+    AxdrTags.DOUBLE_LONG: TagSpec(byte_length=4, is_signed=True),
+    AxdrTags.DOUBLE_LONG_UNSIGNED: TagSpec(byte_length=4, is_signed=False),
+    AxdrTags.INTEGER: TagSpec(byte_length=1, is_signed=True),
+    AxdrTags.LONG: TagSpec(byte_length=2, is_signed=True),
+    AxdrTags.UNSIGNED: TagSpec(byte_length=1, is_signed=False),
+    AxdrTags.LONG_UNSIGNED: TagSpec(byte_length=2, is_signed=False),
+    AxdrTags.LONG64: TagSpec(byte_length=8, is_signed=True),
+    AxdrTags.LONG64_UNSIGNED: TagSpec(byte_length=8, is_signed=False),
+    AxdrTags.ENUM: TagSpec(byte_length=1, is_signed=False),
 }
 
 
