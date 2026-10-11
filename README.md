@@ -165,7 +165,7 @@ from microdlms import (
 
 # Initialize the sans-I/O session
 session = DlmsSession(
-    client_address=32,
+    client_logical_address=32,
     server_logical_address=1,
     server_physical_address=42,
 )

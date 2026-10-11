@@ -61,12 +61,12 @@ class DlmsSession:
 
     def __init__(
         self,
-        client_address: int = DEFAULT_CLIENT_LOGICAL_ADDRESS,
+        client_logical_address: int = DEFAULT_CLIENT_LOGICAL_ADDRESS,
         server_logical_address: int = DEFAULT_SERVER_LOGICAL_ADDRESS,
         server_physical_address: int | None = None,
         system_title: bytes | None = None,
     ) -> None:
-        self.client_address = client_address
+        self.client_logical_address = client_logical_address
         self.server_logical_address = server_logical_address
         self.server_physical_address = server_physical_address
         self.system_title = system_title
@@ -74,7 +74,7 @@ class DlmsSession:
         self._destination_address_bytes = encode_address(
             server_logical_address, server_physical_address
         )
-        self._source_address_bytes = encode_address(client_address)
+        self._source_address_bytes = encode_address(client_logical_address)
 
         self._state = SessionState.DISCONNECTED
         self._send_seq = 0

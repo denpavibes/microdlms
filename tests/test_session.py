@@ -164,7 +164,9 @@ def test_dlms_session_full_lifecycle() -> None:
     def assert_state(current_session: DlmsSession, expected: SessionState) -> None:
         assert current_session.state == expected
 
-    session = DlmsSession(client_address=32, server_logical_address=1, server_physical_address=42)
+    session = DlmsSession(
+        client_logical_address=32, server_logical_address=1, server_physical_address=42
+    )
     assert_state(session, SessionState.DISCONNECTED)
 
     # 1. Initiate connect (SNRM)
@@ -268,7 +270,7 @@ def test_dlms_session_full_lifecycle() -> None:
 def test_session_default_server_physical_address() -> None:
     """Verify default addresses and server_physical_address defaults to None on DlmsSession."""
     session_default = DlmsSession()
-    assert session_default.client_address == DEFAULT_CLIENT_LOGICAL_ADDRESS
+    assert session_default.client_logical_address == DEFAULT_CLIENT_LOGICAL_ADDRESS
     assert session_default.server_logical_address == DEFAULT_SERVER_LOGICAL_ADDRESS
     assert session_default.server_physical_address is None
 

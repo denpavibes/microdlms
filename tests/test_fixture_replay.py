@@ -52,7 +52,7 @@ def test_replay_individual_exchange_frames(exchange: dict[str, Any]) -> None:
     response_hdlc = exchange["resp_hdlc"]
 
     session = DlmsSession(
-        client_address=meter_fixtures.CLIENT_LOGICAL_ADDRESS,
+        client_logical_address=meter_fixtures.CLIENT_LOGICAL_ADDRESS,
         server_logical_address=meter_fixtures.SERVER_LOGICAL_ADDRESS,
         server_physical_address=meter_fixtures.SERVER_PHYSICAL_ADDRESS,
     )
@@ -188,7 +188,7 @@ def _replay_attribute_read_exchange(session: DlmsSession, exchange: dict[str, An
 def test_full_continuous_session_replay() -> None:
     """Replay all 46 exchanges in continuous chronological order through a single DlmsSession."""
     session = DlmsSession(
-        client_address=meter_fixtures.CLIENT_LOGICAL_ADDRESS,
+        client_logical_address=meter_fixtures.CLIENT_LOGICAL_ADDRESS,
         server_logical_address=meter_fixtures.SERVER_LOGICAL_ADDRESS,
         server_physical_address=meter_fixtures.SERVER_PHYSICAL_ADDRESS,
     )

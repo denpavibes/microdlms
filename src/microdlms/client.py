@@ -67,7 +67,7 @@ class AsyncMeterClient:
         self.retry_delay = retry_delay
 
         self._session = DlmsSession(
-            client_address=client_logical_address,
+            client_logical_address=client_logical_address,
             server_logical_address=server_logical_address,
             server_physical_address=server_physical_address,
             system_title=system_title,
