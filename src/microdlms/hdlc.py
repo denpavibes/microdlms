@@ -107,8 +107,7 @@ def decode_address(data: bytes, offset: int = 0) -> tuple[bytes, int]:
         offset += 1
         if byte_value & 1:
             return data[start_offset:offset], offset
-    message = f"Incomplete HDLC address at offset {start_offset}"
-    raise ProtocolError(message)
+    raise ProtocolError(f"Incomplete HDLC address at offset {start_offset}")
 
 
 def make_i_control(send_seq: int, recv_seq: int, poll: bool = True) -> int:
@@ -169,8 +168,9 @@ def build_frame(
         # Total frame length between flags = header + info_length + 2 (fcs)
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + 2 + info_length + 2
         if frame_length > 0x07FF:
-            message = f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
-            raise ProtocolError(message)
+            raise ProtocolError(
+                f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
+            )
         format_word = 0xA000 | (frame_length & 0x07FF)
         format_bytes = format_word.to_bytes(2, "big")
         header_data = format_bytes + dest_address + src_address + bytes([control])
@@ -181,8 +181,9 @@ def build_frame(
     else:
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + info_length + 2
         if frame_length > 0x07FF:
-            message = f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
-            raise ProtocolError(message)
+            raise ProtocolError(
+                f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
+            )
         format_word = 0xA000 | (frame_length & 0x07FF)
         format_bytes = format_word.to_bytes(2, "big")
         frame_body = (
@@ -200,36 +201,30 @@ def build_frame(
 def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
     """Parse and validate raw HDLC frame bytes including flag check, FCS, and HCS."""
     if len(frame) < 7:
-        message = f"HDLC frame too short: {len(frame)} bytes"
-        raise ProtocolError(message)
+        raise ProtocolError(f"HDLC frame too short: {len(frame)} bytes")
     if frame[0] != HDLC_FLAG or frame[-1] != HDLC_FLAG:
-        message = "HDLC frame missing opening or closing 0x7E flag"
-        raise ProtocolError(message)
+        raise ProtocolError("HDLC frame missing opening or closing 0x7E flag")
 
     content = frame[1:-1]
     if not check_crc16(content):
-        message = f"FCS check failed on HDLC frame: {frame.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"FCS check failed on HDLC frame: {frame.hex()}")
 
     format_word = int.from_bytes(content[0:2], "big")
     format_type = (format_word >> 12) & 0x0F
     if format_type != 0x0A:
-        message = f"Unsupported HDLC frame format type: {format_type} (expected 10/0xA)"
-        raise ProtocolError(message)
+        raise ProtocolError(f"Unsupported HDLC frame format type: {format_type} (expected 10/0xA)")
     segmented = bool((format_word >> 11) & 0x01)
     declared_length = format_word & 0x07FF
     if declared_length != len(content):
-        message = (
+        raise ProtocolError(
             f"Declared HDLC frame length {declared_length} "
             f"does not match actual length {len(content)}"
         )
-        raise ProtocolError(message)
 
     destination_address, offset = decode_address(content, 2)
     source_address, offset = decode_address(content, offset)
     if offset >= len(content) - 2:
-        message = "HDLC frame truncated before control byte"
-        raise ProtocolError(message)
+        raise ProtocolError("HDLC frame truncated before control byte")
 
     control = content[offset]
     offset += 1
@@ -239,8 +234,7 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
     if is_information_frame:
         header_with_hcs = content[: offset + 2]
         if not check_crc16(header_with_hcs):
-            message = f"HCS check failed on HDLC I-frame header: {header_with_hcs.hex()}"
-            raise ProtocolError(message)
+            raise ProtocolError(f"HCS check failed on HDLC I-frame header: {header_with_hcs.hex()}")
         header_check_sequence = content[offset : offset + 2]
         offset += 2
         information_bytes = content[offset:-2]
@@ -331,10 +325,8 @@ def wrap_llc(apdu: bytes) -> bytes:
 def unwrap_llc(info: bytes) -> bytes:
     """Validate and strip LLC header from incoming HDLC information field."""
     if len(info) < 3:
-        message = f"HDLC information field too short for LLC header: {len(info)} bytes"
-        raise ProtocolError(message)
+        raise ProtocolError(f"HDLC information field too short for LLC header: {len(info)} bytes")
     llc_header = info[:3]
     if llc_header not in (LLC_RESP_HEADER, LLC_REQ_HEADER):
-        message = f"Unknown or invalid LLC header: {llc_header.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"Unknown or invalid LLC header: {llc_header.hex()}")
     return info[3:]

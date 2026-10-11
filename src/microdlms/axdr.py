@@ -39,8 +39,7 @@ class AxdrReader:
     def read_byte(self) -> int:
         """Read a single byte from the buffer."""
         if self._position >= len(self._data):
-            message = f"Unexpected end of data at offset {self._position}"
-            raise ProtocolError(message)
+            raise ProtocolError(f"Unexpected end of data at offset {self._position}")
         byte = self._data[self._position]
         self._position += 1
         return byte
@@ -48,14 +47,12 @@ class AxdrReader:
     def read_bytes(self, count: int) -> bytes:
         """Read exact number of bytes from the buffer."""
         if count < 0:
-            message = f"Invalid negative byte count: {count}"
-            raise ProtocolError(message)
+            raise ProtocolError(f"Invalid negative byte count: {count}")
         if self._position + count > len(self._data):
-            message = (
+            raise ProtocolError(
                 f"Unexpected end of data: needed {count} bytes at offset {self._position}, "
                 f"only {self.remaining} available"
             )
-            raise ProtocolError(message)
         chunk = self._data[self._position : self._position + count]
         self._position += count
         return chunk
@@ -67,8 +64,7 @@ class AxdrReader:
             return initial
         length_bytes_count = initial & 0x7F
         if length_bytes_count == 0:
-            message = "Indefinite length encoding is not allowed in DLMS A-XDR"
-            raise ProtocolError(message)
+            raise ProtocolError("Indefinite length encoding is not allowed in DLMS A-XDR")
         length_bytes = self.read_bytes(length_bytes_count)
         return int.from_bytes(length_bytes, "big", signed=False)
 
@@ -106,8 +102,9 @@ class AxdrReader:
             byte_length, is_signed = int_spec
             return int.from_bytes(self.read_bytes(byte_length), "big", signed=is_signed)
 
-        message = f"Unsupported or unknown A-XDR tag 0x{tag:02X} at offset {self._position - 1}"
-        raise ProtocolError(message)
+        raise ProtocolError(
+            f"Unsupported or unknown A-XDR tag 0x{tag:02X} at offset {self._position - 1}"
+        )
 
 
 def decode_axdr(data: bytes) -> Any:

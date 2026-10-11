@@ -36,8 +36,7 @@ def encode_aarq(
     """Encode an Application Association Request (AARQ) APDU."""
     effective_system_title = system_title if system_title is not None else DEFAULT_SYSTEM_TITLE
     if len(effective_system_title) != 8:
-        message = f"System title must be exactly 8 bytes, got {len(effective_system_title)}"
-        raise ValueError(message)
+        raise ValueError(f"System title must be exactly 8 bytes, got {len(effective_system_title)}")
 
     parts: list[bytes] = []
 
@@ -110,8 +109,7 @@ def _parse_aare_diagnostic(chunk: bytes) -> int:
 def decode_aare(apdu: bytes) -> tuple[AssociationResult, int]:
     """Decode an Application Association Response (AARE) APDU into (result, diagnostic)."""
     if len(apdu) < 3 or apdu[0] != TAG_AARE:
-        message = f"Invalid AARE APDU: {apdu.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"Invalid AARE APDU: {apdu.hex()}")
 
     position = 1
     # Read length of AARE
@@ -136,8 +134,7 @@ def decode_aare(apdu: bytes) -> tuple[AssociationResult, int]:
             diagnostic = _parse_aare_diagnostic(chunk)
 
     if result is None:
-        message = f"AARE APDU missing result field: {apdu.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"AARE APDU missing result field: {apdu.hex()}")
 
     return result, diagnostic
 
@@ -157,13 +154,13 @@ def encode_get_request_normal(
 def decode_get_response_normal(apdu: bytes) -> tuple[int, bool, Any]:
     """Decode a Get-Response-Normal APDU into (invoke_id, is_success, value_or_error_code)."""
     if len(apdu) < 4 or apdu[0] != TAG_GET_RESPONSE:
-        message = f"Invalid Get-Response APDU: {apdu.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"Invalid Get-Response APDU: {apdu.hex()}")
 
     choice = apdu[1]
     if choice != 0x01:
-        message = f"Unsupported Get-Response type 0x{choice:02X} (only Normal=0x01 is supported)"
-        raise ProtocolError(message)
+        raise ProtocolError(
+            f"Unsupported Get-Response type 0x{choice:02X} (only Normal=0x01 is supported)"
+        )
 
     invoke_id = apdu[2] & 0x0F
     result_type = apdu[3]
@@ -176,16 +173,14 @@ def decode_get_response_normal(apdu: bytes) -> tuple[int, bool, Any]:
     if result_type == 0x01:
         # DataAccessResult error code at offset 4
         if len(apdu) < 5:
-            message = "Get-Response-Normal error result missing error code"
-            raise ProtocolError(message)
+            raise ProtocolError("Get-Response-Normal error result missing error code")
         try:
             error_code = DataAccessResult(apdu[4])
         except ValueError:
             error_code = DataAccessResult.OTHER_REASON
         return invoke_id, False, error_code
 
-    message = f"Unknown GetDataResult choice: 0x{result_type:02X}"
-    raise ProtocolError(message)
+    raise ProtocolError(f"Unknown GetDataResult choice: 0x{result_type:02X}")
 
 
 def encode_rlrq(reason: int = 0) -> bytes:
@@ -196,8 +191,7 @@ def encode_rlrq(reason: int = 0) -> bytes:
 def decode_rlre(apdu: bytes) -> int:
     """Decode an ACSE Release Response (RLRE) APDU into release reason code."""
     if len(apdu) < 2 or apdu[0] != TAG_RLRE:
-        message = f"Invalid RLRE APDU: {apdu.hex()}"
-        raise ProtocolError(message)
+        raise ProtocolError(f"Invalid RLRE APDU: {apdu.hex()}")
     if len(apdu) >= 5 and apdu[2] == 0x80 and apdu[3] == 0x01:
         return apdu[4]
     return 0

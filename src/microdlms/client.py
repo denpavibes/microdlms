@@ -88,8 +88,9 @@ class AsyncMeterClient:
                 baudrate=self.baudrate,
             )
         except Exception as error:
-            message = f"Failed to open connection to {self.port}: {error}"
-            raise CommunicationError(message) from error
+            raise CommunicationError(
+                f"Failed to open connection to {self.port}: {error}"
+            ) from error
 
         try:
             # Step 1: Establish HDLC physical link (SNRM -> UA)
@@ -97,8 +98,7 @@ class AsyncMeterClient:
             await self._flush_outbound()
             event = await self._wait_for_event(ConnectedEvent, ProtocolErrorEvent)
             if isinstance(event, ProtocolErrorEvent):
-                message = f"HDLC connect failed: {event.message}"
-                raise CommunicationError(message)
+                raise CommunicationError(f"HDLC connect failed: {event.message}")
 
             # Step 2: Establish application association (AARQ -> AARE)
             self._session.initiate_association(
@@ -111,14 +111,12 @@ class AsyncMeterClient:
                 ProtocolErrorEvent,
             )
             if isinstance(event, AssociationRejectedEvent):
-                message = (
+                raise AuthenticationError(
                     f"Association rejected by meter: result={event.result.name} "
                     f"(diagnostic={event.diagnostic})"
                 )
-                raise AuthenticationError(message)
             if isinstance(event, ProtocolErrorEvent):
-                message = f"Association failed: {event.message}"
-                raise CommunicationError(message)
+                raise CommunicationError(f"Association failed: {event.message}")
         except Exception:
             await self.disconnect()
             raise
@@ -128,13 +126,13 @@ class AsyncMeterClient:
         if isinstance(event, GetResponseEvent):
             return event.value
         if isinstance(event, GetAccessErrorEvent):
-            message = f"Meter returned error: {event.error_code.name} ({event.error_code.value})"
-            raise DataAccessError(error_code=event.error_code, message=message)
+            raise DataAccessError(
+                error_code=event.error_code,
+                message=f"Meter returned error: {event.error_code.name} ({event.error_code.value})",
+            )
         if isinstance(event, ProtocolErrorEvent):
-            message = f"Protocol error during get: {event.message}"
-            raise CommunicationError(message)
-        message = f"Unexpected event received during get: {type(event).__name__}"
-        raise CommunicationError(message)
+            raise CommunicationError(f"Protocol error during get: {event.message}")
+        raise CommunicationError(f"Unexpected event received during get: {type(event).__name__}")
 
     async def _execute_get_attempt(
         self,
@@ -189,8 +187,7 @@ class AsyncMeterClient:
     ) -> Any:
         """Query a COSEM attribute from the meter and return its decoded Python value."""
         if not self.is_connected:
-            message = "Client is not connected. Call connect() first."
-            raise CommunicationError(message)
+            raise CommunicationError("Client is not connected. Call connect() first.")
 
         effective_retries = max(0, self.retries if retries is None else retries)
         effective_delay = self.retry_delay if retry_delay is None else retry_delay
@@ -244,8 +241,7 @@ class AsyncMeterClient:
             event = self._event_queue[index]
             if isinstance(event, DisconnectedEvent) and DisconnectedEvent not in expected_types:
                 self._event_queue.pop(index)
-                message = "Connection disconnected by meter"
-                raise CommunicationError(message)
+                raise CommunicationError("Connection disconnected by meter")
             if isinstance(event, expected_types):
                 if predicate is None or predicate(event):
                     return self._event_queue.pop(index)
@@ -266,8 +262,7 @@ class AsyncMeterClient:
             return cached_event
 
         if self._reader is None:
-            message = "Reader is not initialized"
-            raise CommunicationError(message)
+            raise CommunicationError("Reader is not initialized")
 
         effective_timeout = timeout if timeout is not None else self.timeout
         try:
@@ -275,16 +270,16 @@ class AsyncMeterClient:
                 while True:
                     data = await self._reader.read(1024)
                     if not data:
-                        message = "Connection closed by peer / EOF encountered"
-                        raise CommunicationError(message)
+                        raise CommunicationError("Connection closed by peer / EOF encountered")
 
                     self._event_queue.extend(self._session.receive_bytes(data))
                     matching = self._extract_matching_event(expected_types, predicate)
                     if matching is not None:
                         return matching
         except TimeoutError as error:
-            message = f"Timeout ({effective_timeout}s) waiting for meter response"
-            raise CommunicationError(message) from error
+            raise CommunicationError(
+                f"Timeout ({effective_timeout}s) waiting for meter response"
+            ) from error
 
     async def __aenter__(self) -> Self:
         await self.connect()

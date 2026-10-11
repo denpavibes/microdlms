@@ -100,8 +100,7 @@ class ScalerUnit:
     def from_structure(cls, data: Sequence[Any]) -> Self:
         """Construct ScalerUnit from an A-XDR decoded structure [scaler, unit]."""
         if len(data) != 2:
-            message = f"Expected 2 elements for scaler_unit structure, got {len(data)}"
-            raise ValueError(message)
+            raise ValueError(f"Expected 2 elements for scaler_unit structure, got {len(data)}")
         return cls(scaler=int(data[0]), unit=int(data[1]))
 
     def scale(self, value: int | float) -> float:
@@ -128,8 +127,7 @@ class CosemDateTime:
     def from_bytes(cls, data: bytes) -> Self:
         """Parse DLMS 12-byte octet string into CosemDateTime."""
         if len(data) != 12:
-            message = f"COSEM date-time requires 12 bytes, got {len(data)}"
-            raise ValueError(message)
+            raise ValueError(f"COSEM date-time requires 12 bytes, got {len(data)}")
         year = int.from_bytes(data[0:2], "big")
         month = data[2]
         day = data[3]

@@ -130,8 +130,7 @@ class DlmsSession:
     ) -> None:
         """Prepare an AARQ APDU wrapped in an HDLC I-frame for application association."""
         if self._state not in (SessionState.CONNECTED, SessionState.DISCONNECTED):
-            message = f"Cannot initiate association in state {self._state.name}"
-            raise ProtocolError(message)
+            raise ProtocolError(f"Cannot initiate association in state {self._state.name}")
 
         effective_system_title = system_title if system_title is not None else self.system_title
         aarq_apdu = encode_aarq(password=password, system_title=effective_system_title)
@@ -151,8 +150,9 @@ class DlmsSession:
     def request_attribute(self, attribute: CosemAttribute) -> int:
         """Prepare a Get-Request-Normal frame for a COSEM attribute. Returns allocated invoke_id."""
         if self._state != SessionState.ASSOCIATED:
-            message = f"Cannot request attribute in state {self._state.name}; must be ASSOCIATED"
-            raise ProtocolError(message)
+            raise ProtocolError(
+                f"Cannot request attribute in state {self._state.name}; must be ASSOCIATED"
+            )
 
         current_invoke_id = self._invoke_id
         self._invoke_id = (self._invoke_id + 1) % 16

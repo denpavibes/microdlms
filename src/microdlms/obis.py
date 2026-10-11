@@ -29,8 +29,7 @@ class ObisCode:
             ("f", self.f),
         ):
             if not (0 <= value <= 255):
-                message = f"OBIS group {name} must be within 0..255, got {value}"
-                raise ValueError(message)
+                raise ValueError(f"OBIS group {name} must be within 0..255, got {value}")
 
     @classmethod
     def from_string(cls, text: str) -> Self:
@@ -52,17 +51,15 @@ class ObisCode:
             return cls(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])
         if len(parts) == 5:
             return cls(parts[0], parts[1], parts[2], parts[3], parts[4], 255)
-        message = (
+        raise ValueError(
             f"Expected 5 or 6 dot-separated parts in OBIS string, got {len(parts)} in {text!r}"
         )
-        raise ValueError(message)
 
     @classmethod
     def from_bytes(cls, data: bytes) -> Self:
         """Parse OBIS code from 6 raw bytes."""
         if len(data) != 6:
-            message = f"OBIS code requires exactly 6 bytes, got {len(data)}"
-            raise ValueError(message)
+            raise ValueError(f"OBIS code requires exactly 6 bytes, got {len(data)}")
         return cls(data[0], data[1], data[2], data[3], data[4], data[5])
 
     def to_bytes(self) -> bytes:
