@@ -5,10 +5,14 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from collections.abc import Callable
-from typing import Any, Self
+from typing import Any, Final, Self
 
 import serialx
 
+from microdlms.const import (
+    DEFAULT_CLIENT_LOGICAL_ADDRESS,
+    DEFAULT_SERVER_LOGICAL_ADDRESS,
+)
 from microdlms.exceptions import (
     AuthenticationError,
     CommunicationError,
@@ -27,6 +31,13 @@ from microdlms.types import (
     SessionEvent,
 )
 
+DEFAULT_BAUDRATE: Final = 9600
+DEFAULT_TIMEOUT: Final = 10.0
+DEFAULT_RETRIES: Final = 3
+DEFAULT_RETRY_DELAY: Final = 0.0
+DISCONNECT_TIMEOUT: Final = 2.0
+BUFFER_READ_SIZE: Final = 1024
+
 
 class AsyncMeterClient:
     """High-level asynchronous client for reading DLMS/COSEM meters over serial or TCP sockets."""
@@ -34,15 +45,15 @@ class AsyncMeterClient:
     def __init__(
         self,
         port: str,
-        baudrate: int = 9600,
+        baudrate: int = DEFAULT_BAUDRATE,
         password: str | bytes | None = None,
-        client_logical_address: int = 32,
-        server_logical_address: int = 1,
+        client_logical_address: int = DEFAULT_CLIENT_LOGICAL_ADDRESS,
+        server_logical_address: int = DEFAULT_SERVER_LOGICAL_ADDRESS,
         server_physical_address: int | None = None,
-        timeout: float = 10.0,
+        timeout: float = DEFAULT_TIMEOUT,
         system_title: bytes | None = None,
-        retries: int = 3,
-        retry_delay: float = 0.0,
+        retries: int = DEFAULT_RETRIES,
+        retry_delay: float = DEFAULT_RETRY_DELAY,
     ) -> None:
         self.port = port
         self.baudrate = baudrate
@@ -213,7 +224,9 @@ class AsyncMeterClient:
                 self._session.initiate_disconnect()
                 await self._flush_outbound()
                 with contextlib.suppress(Exception):
-                    await self._wait_for_event(DisconnectedEvent, timeout=min(self.timeout, 2.0))
+                    await self._wait_for_event(
+                        DisconnectedEvent, timeout=min(self.timeout, DISCONNECT_TIMEOUT)
+                    )
         finally:
             if self._writer is not None:
                 with contextlib.suppress(Exception):
@@ -268,7 +281,7 @@ class AsyncMeterClient:
         try:
             async with asyncio.timeout(effective_timeout):
                 while True:
-                    data = await self._reader.read(1024)
+                    data = await self._reader.read(BUFFER_READ_SIZE)
                     if not data:
                         raise CommunicationError("Connection closed by peer / EOF encountered")
 

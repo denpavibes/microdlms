@@ -6,15 +6,18 @@ from enum import Enum, auto
 from typing import Final
 
 from microdlms.apdu import (
-    TAG_AARE,
-    TAG_GET_RESPONSE,
-    TAG_RLRE,
     decode_aare,
     decode_get_response_normal,
     decode_rlre,
     encode_aarq,
     encode_get_request_normal,
     encode_rlrq,
+)
+from microdlms.const import (
+    DEFAULT_CLIENT_LOGICAL_ADDRESS,
+    DEFAULT_SERVER_LOGICAL_ADDRESS,
+    ApduTags,
+    HdlcControls,
 )
 from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import (
@@ -41,12 +44,8 @@ from microdlms.types import (
     SessionEvent,
 )
 
-HDLC_SNRM_CONTROL: Final = 0x93  # Unnumbered SNRM with Poll=1
-HDLC_DISC_CONTROL: Final = 0x53  # Unnumbered DISC with Poll=1
-HDLC_UA_CONTROL_F: Final = 0x73  # UA with Final=1
-HDLC_UA_CONTROL: Final = 0x63  # UA without Final
-HDLC_DM_CONTROL_F: Final = 0x1F  # DM with Final=1
-HDLC_DM_CONTROL: Final = 0x0F  # DM without Final
+HDLC_SEQUENCE_MODULO: Final = 8
+INVOKE_ID_MODULO: Final = 16
 
 
 class SessionState(Enum):
@@ -65,8 +64,8 @@ class DlmsSession:
 
     def __init__(
         self,
-        client_address: int = 32,
-        server_logical_address: int = 1,
+        client_address: int = DEFAULT_CLIENT_LOGICAL_ADDRESS,
+        server_logical_address: int = DEFAULT_SERVER_LOGICAL_ADDRESS,
         server_physical_address: int | None = None,
         system_title: bytes | None = None,
     ) -> None:
@@ -117,7 +116,7 @@ class DlmsSession:
         snrm_frame = build_frame(
             dest_address=self._destination_address_bytes,
             src_address=self._source_address_bytes,
-            control=HDLC_SNRM_CONTROL,
+            control=HdlcControls.SNRM,
             information=None,
         )
         self._outbound_buffer.extend(snrm_frame)
@@ -143,7 +142,7 @@ class DlmsSession:
             control=control,
             information=info,
         )
-        self._send_seq = (self._send_seq + 1) % 8
+        self._send_seq = (self._send_seq + 1) % HDLC_SEQUENCE_MODULO
         self._outbound_buffer.extend(frame)
         self._state = SessionState.ASSOCIATING
 
@@ -155,7 +154,7 @@ class DlmsSession:
             )
 
         current_invoke_id = self._invoke_id
-        self._invoke_id = (self._invoke_id + 1) % 16
+        self._invoke_id = (self._invoke_id + 1) % INVOKE_ID_MODULO
 
         get_apdu = encode_get_request_normal(attribute=attribute, invoke_id=current_invoke_id)
         info = wrap_llc(get_apdu)
@@ -167,7 +166,7 @@ class DlmsSession:
             control=control,
             information=info,
         )
-        self._send_seq = (self._send_seq + 1) % 8
+        self._send_seq = (self._send_seq + 1) % HDLC_SEQUENCE_MODULO
         self._outbound_buffer.extend(frame)
         return current_invoke_id
 
@@ -182,7 +181,7 @@ class DlmsSession:
             control=control,
             information=info,
         )
-        self._send_seq = (self._send_seq + 1) % 8
+        self._send_seq = (self._send_seq + 1) % HDLC_SEQUENCE_MODULO
         self._outbound_buffer.extend(frame)
 
     def initiate_disconnect(self) -> None:
@@ -190,7 +189,7 @@ class DlmsSession:
         disc_frame = build_frame(
             dest_address=self._destination_address_bytes,
             src_address=self._source_address_bytes,
-            control=HDLC_DISC_CONTROL,
+            control=HdlcControls.DISC,
             information=None,
         )
         self._outbound_buffer.extend(disc_frame)
@@ -235,7 +234,7 @@ class DlmsSession:
     def _handle_iframe(self, frame: HdlcFrame) -> SessionEvent:
         """Process incoming I-frame: update seq counter, unwrap LLC, and dispatch APDU."""
         if frame.send_seq is not None:
-            self._recv_seq = (frame.send_seq + 1) % 8
+            self._recv_seq = (frame.send_seq + 1) % HDLC_SEQUENCE_MODULO
 
         if not frame.information:
             return ProtocolErrorEvent("Information field missing in received I-frame")
@@ -249,18 +248,18 @@ class DlmsSession:
             return ProtocolErrorEvent("Empty APDU in received I-frame")
 
         tag = apdu[0]
-        if tag == TAG_AARE:
+        if tag == ApduTags.AARE:
             return self._handle_aare_apdu(apdu)
-        if tag == TAG_GET_RESPONSE:
+        if tag == ApduTags.GET_RESPONSE:
             return self._handle_get_response_apdu(apdu)
-        if tag == TAG_RLRE:
+        if tag == ApduTags.RLRE:
             return self._handle_rlre_apdu(apdu)
         return ProtocolErrorEvent(f"Unsupported APDU tag 0x{tag:02X}")
 
     def _handle_uframe(self, frame: HdlcFrame) -> SessionEvent:
         """Process incoming unnumbered control frame (UA, DM, DISC)."""
         control = frame.control
-        if control in (HDLC_UA_CONTROL_F, HDLC_UA_CONTROL):
+        if control in (HdlcControls.UA_FINAL, HdlcControls.UA):
             if self._state == SessionState.CONNECTING:
                 self._state = SessionState.CONNECTED
                 self._send_seq = 0
@@ -271,7 +270,7 @@ class DlmsSession:
                 return DisconnectedEvent()
             return ConnectedEvent()
 
-        if control in (HDLC_DM_CONTROL_F, HDLC_DM_CONTROL) or control == HDLC_DISC_CONTROL:
+        if control in (HdlcControls.DM_FINAL, HdlcControls.DM, HdlcControls.DISC):
             self._state = SessionState.DISCONNECTED
             return DisconnectedEvent()
 

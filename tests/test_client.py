@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from microdlms.client import AsyncMeterClient
+from microdlms.const import HdlcControls
 from microdlms.exceptions import (
     AuthenticationError,
     CommunicationError,
@@ -83,7 +84,7 @@ async def test_client_connect_and_get_lifecycle(
 
     # Pre-populate responses:
     # 1. UA response to SNRM
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
 
     # 2. AARE Accepted response to AARQ
@@ -109,7 +110,9 @@ async def test_client_connect_and_get_lifecycle(
     reader.feed_bytes(get_response_frame)
 
     # 4. UA response to DISC
-    disconnect_ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    disconnect_ua_frame = build_frame(
+        encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL
+    )
     reader.feed_bytes(disconnect_ua_frame)
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
@@ -143,7 +146,7 @@ async def test_client_async_context_manager(
     """Test AsyncMeterClient as an async context manager."""
     reader, writer = mock_serial_pair
 
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
 
     aare_apdu = bytes.fromhex(
@@ -157,7 +160,9 @@ async def test_client_async_context_manager(
     )
     reader.feed_bytes(aare_frame)
 
-    disconnect_ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    disconnect_ua_frame = build_frame(
+        encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL
+    )
     reader.feed_bytes(disconnect_ua_frame)
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
@@ -184,7 +189,7 @@ async def test_client_authentication_failure(
     reader, writer = mock_serial_pair
 
     # 1. UA response to SNRM
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
 
     # 2. AARE Rejected (AUTHENTICATION_FAILED, diag=13)
@@ -210,7 +215,7 @@ async def test_client_data_access_error(
     reader, writer = mock_serial_pair
 
     # SNRM -> UA
-    reader.feed_bytes(build_frame(encode_address(32), encode_address(1, 42), 0x73))
+    reader.feed_bytes(build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL))
     # AARQ -> AARE Accepted
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -283,7 +288,7 @@ async def test_client_reconnect_and_protocol_errors(
     reader, writer = mock_serial_pair
 
     # 1. Re-connect when already connected is a no-op
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -354,7 +359,7 @@ async def test_client_reconnect_and_protocol_errors(
         )
     )
     # Feed DISC from meter during get -> delivers DisconnectedEvent instead of GetResponse
-    disc_frame = build_frame(encode_address(32), encode_address(1, 42), 0x53)
+    disc_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.DISC)
     reader_unexpected.feed_bytes(disc_frame)
     with patch(
         "serialx.open_serial_connection",
@@ -447,7 +452,7 @@ async def test_client_get_retry_recovers_from_corrupted_frame(
     reader, writer = mock_serial_pair
 
     # 1. Connect frames
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -495,7 +500,7 @@ async def test_client_get_retry_recovers_from_timeout(
     """Verify that a timeout on the first attempt is retried and succeeds on the second attempt."""
     reader, writer = mock_serial_pair
 
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -592,7 +597,7 @@ async def test_client_get_discards_stale_delayed_response_from_previous_get(
     reader, writer = mock_serial_pair
 
     # Connect frames
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -650,7 +655,7 @@ async def test_client_get_multiple_retries_mixed_errors_eventual_success(
     reader, writer = mock_serial_pair
 
     # Connect frames
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
     aare_apdu = bytes.fromhex(
         "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
@@ -716,7 +721,7 @@ async def test_client_get_stale_data_access_error_ignored(
     attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
 
     # Feed unexpected frame over the wire (UA -> ConnectedEvent), followed by valid response
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     reader.feed_bytes(ua_frame)
 
     # Valid response for invoke_id=0

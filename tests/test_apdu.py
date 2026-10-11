@@ -5,6 +5,15 @@ from __future__ import annotations
 import pytest
 
 from microdlms.apdu import (
+    ACCESS_SELECTION_NONE,
+    BER_LENGTH_SINGLE_BYTE,
+    DEFAULT_PRIORITY,
+    RELEASE_REASON_NORMAL,
+    REQUEST_TYPE_NORMAL,
+    RESPONSE_TYPE_NORMAL,
+    RESULT_TYPE_DATA_ACCESS_RESULT,
+    RESULT_TYPE_SUCCESS,
+    RLRQ_LENGTH,
     decode_aare,
     decode_get_response_normal,
     decode_rlre,
@@ -12,8 +21,9 @@ from microdlms.apdu import (
     encode_get_request_normal,
     encode_rlrq,
 )
+from microdlms.const import ApduTags
 from microdlms.exceptions import ProtocolError
-from microdlms.obis import CosemAttribute, ObisCode
+from microdlms.obis import DEFAULT_COSEM_ATTRIBUTE_ID, CosemAttribute, ObisCode
 from microdlms.types import AssociationResult, DataAccessResult, InterfaceClass
 
 
@@ -23,7 +33,7 @@ def test_aarq_encoding() -> None:
 
     # With LLS password (string)
     aarq_with_password = encode_aarq(password="111111", system_title=system_title)
-    assert aarq_with_password[0] == 0x60
+    assert aarq_with_password[0] == ApduTags.AARQ
     assert b"111111" in aarq_with_password
     assert system_title in aarq_with_password
 
@@ -33,7 +43,7 @@ def test_aarq_encoding() -> None:
 
     # Without password (no security)
     aarq_no_password = encode_aarq(password=None, system_title=system_title)
-    assert aarq_no_password[0] == 0x60
+    assert aarq_no_password[0] == ApduTags.AARQ
     assert b"111111" not in aarq_no_password
     assert len(aarq_no_password) < len(aarq_with_password)
 
@@ -86,17 +96,17 @@ def test_get_request_normal_encoding() -> None:
     attribute = CosemAttribute(
         interface=InterfaceClass.DATA,
         obis=ObisCode(0, 0, 42, 0, 0, 255),
-        attribute=2,
+        attribute=DEFAULT_COSEM_ATTRIBUTE_ID,
     )
     apdu = encode_get_request_normal(attribute=attribute, invoke_id=3)
     assert len(apdu) == 13
-    assert apdu[0] == 0xC0  # Get-Request
-    assert apdu[1] == 0x01  # Normal
-    assert apdu[2] == 0xC3  # 0xC0 | 3
+    assert apdu[0] == ApduTags.GET_REQUEST
+    assert apdu[1] == REQUEST_TYPE_NORMAL
+    assert apdu[2] == DEFAULT_PRIORITY | 3
     assert apdu[3:5] == b"\x00\x01"  # InterfaceClass.DATA = 1
     assert apdu[5:11] == bytes([0, 0, 42, 0, 0, 255])  # OBIS
-    assert apdu[11] == 2  # Attribute
-    assert apdu[12] == 0  # Access selection None
+    assert apdu[11] == DEFAULT_COSEM_ATTRIBUTE_ID
+    assert apdu[12] == ACCESS_SELECTION_NONE
 
 
 def test_get_response_normal_decoding() -> None:
@@ -131,14 +141,14 @@ def test_get_response_normal_decoding() -> None:
 
 def test_rlrq_and_rlre() -> None:
     """Test ACSE release request and release response codecs."""
-    rlrq = encode_rlrq(reason=0)
+    rlrq = encode_rlrq(reason=RELEASE_REASON_NORMAL)
     assert rlrq == b"\x62\x03\x80\x01\x00"
 
     rlre = bytes.fromhex("6303800100")
-    assert decode_rlre(rlre) == 0
+    assert decode_rlre(rlre) == RELEASE_REASON_NORMAL
 
-    # Short RLRE without optional reason field defaults to 0
-    assert decode_rlre(b"\x63\x00") == 0
+    # Short RLRE without optional reason field defaults to RELEASE_REASON_NORMAL
+    assert decode_rlre(b"\x63\x00") == RELEASE_REASON_NORMAL
 
     # Malformed RLRE
     with pytest.raises(ProtocolError, match="Invalid RLRE APDU"):
@@ -166,3 +176,22 @@ def test_aare_multibyte_tag_and_unknown_result() -> None:
     invoke_id, is_success, error_code = decode_get_response_normal(unknown_error_apdu)
     assert is_success is False
     assert error_code == DataAccessResult.OTHER_REASON
+
+
+def test_apdu_constants() -> None:
+    """Verify APDU codec and tag constants."""
+    assert RESPONSE_TYPE_NORMAL == 0x01
+    assert REQUEST_TYPE_NORMAL == 0x01
+    assert RESULT_TYPE_SUCCESS == 0x00
+    assert RESULT_TYPE_DATA_ACCESS_RESULT == 0x01
+    assert ACCESS_SELECTION_NONE == 0x00
+    assert DEFAULT_PRIORITY == 0xC0
+    assert RELEASE_REASON_NORMAL == 0
+    assert BER_LENGTH_SINGLE_BYTE == 0x01
+    assert RLRQ_LENGTH == 0x03
+    assert ApduTags.AARQ.value == 0x60
+    assert ApduTags.AARE.value == 0x61
+    assert ApduTags.RLRQ.value == 0x62
+    assert ApduTags.RLRE.value == 0x63
+    assert ApduTags.GET_REQUEST.value == 0xC0
+    assert ApduTags.GET_RESPONSE.value == 0xC4

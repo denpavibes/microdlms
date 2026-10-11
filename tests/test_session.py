@@ -6,9 +6,15 @@ import datetime
 
 import pytest
 
+from microdlms.apdu import RELEASE_REASON_NORMAL
+from microdlms.const import (
+    DEFAULT_CLIENT_LOGICAL_ADDRESS,
+    DEFAULT_SERVER_LOGICAL_ADDRESS,
+    HdlcControls,
+)
 from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import build_frame, encode_address, make_i_control, wrap_llc
-from microdlms.obis import CosemAttribute, ObisCode
+from microdlms.obis import DEFAULT_COSEM_ATTRIBUTE_ID, CosemAttribute, ObisCode
 from microdlms.session import DlmsSession, SessionState
 from microdlms.types import (
     AssociatedEvent,
@@ -172,8 +178,8 @@ def test_dlms_session_full_lifecycle() -> None:
     assert len(snrm_bytes) > 0
     assert len(session.data_to_send()) == 0  # outbound buffer drained
 
-    # Meter responds with UA (0x73)
-    ua_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    # Meter responds with UA
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     events = session.receive_bytes(ua_frame)
     assert_state(session, SessionState.CONNECTED)
     assert len(events) == 1
@@ -206,7 +212,9 @@ def test_dlms_session_full_lifecycle() -> None:
 
     # 3. Query attribute
     attribute = CosemAttribute(
-        interface=InterfaceClass.DATA, obis=ObisCode(0, 0, 42, 0, 0, 255), attribute=2
+        interface=InterfaceClass.DATA,
+        obis=ObisCode(0, 0, 42, 0, 0, 255),
+        attribute=DEFAULT_COSEM_ATTRIBUTE_ID,
     )
     invoke_id = session.request_attribute(attribute)
     assert invoke_id == 0
@@ -230,7 +238,7 @@ def test_dlms_session_full_lifecycle() -> None:
     assert session.recv_seq == 2
 
     # 4. Initiate release
-    session.initiate_release(reason=0)
+    session.initiate_release(reason=RELEASE_REASON_NORMAL)
     rlrq_frame = session.data_to_send()
     assert len(rlrq_frame) > 0
 
@@ -252,7 +260,9 @@ def test_dlms_session_full_lifecycle() -> None:
     disc_frame = session.data_to_send()
     assert len(disc_frame) > 0
 
-    ua_disconnect_frame = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    ua_disconnect_frame = build_frame(
+        encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL
+    )
     events = session.receive_bytes(ua_disconnect_frame)
     assert_state(session, SessionState.DISCONNECTED)
     assert len(events) == 1
@@ -260,8 +270,10 @@ def test_dlms_session_full_lifecycle() -> None:
 
 
 def test_session_default_server_physical_address() -> None:
-    """Verify server_physical_address defaults to None on DlmsSession."""
+    """Verify default addresses and server_physical_address defaults to None on DlmsSession."""
     session_default = DlmsSession()
+    assert session_default.client_address == DEFAULT_CLIENT_LOGICAL_ADDRESS
+    assert session_default.server_logical_address == DEFAULT_SERVER_LOGICAL_ADDRESS
     assert session_default.server_physical_address is None
 
     session_custom = DlmsSession(server_physical_address=42)
@@ -287,7 +299,9 @@ def test_session_sequence_and_invoke_id_wrapping() -> None:
     """Test N(S), N(R), and invoke_id modulo wrapping."""
     session = DlmsSession()
     session.initiate_connect()
-    session.receive_bytes(build_frame(encode_address(32), encode_address(1, 42), 0x73))
+    session.receive_bytes(
+        build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    )
     session.initiate_association(password="111111")
     session.receive_bytes(
         build_frame(
@@ -302,7 +316,11 @@ def test_session_sequence_and_invoke_id_wrapping() -> None:
         )
     )
 
-    attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 42, 0, 0, 255), 2)
+    attribute = CosemAttribute(
+        InterfaceClass.DATA,
+        ObisCode(0, 0, 42, 0, 0, 255),
+        DEFAULT_COSEM_ATTRIBUTE_ID,
+    )
     # Perform 16 requests to verify invoke_id starts at 0 and wraps 0..15 -> 0
     for expected_invoke_id in range(16):
         invoke_id = session.request_attribute(attribute)
@@ -323,7 +341,9 @@ def test_session_error_handling() -> None:
     """Test session behavior on association rejection, access error, and protocol errors."""
     session = DlmsSession()
     session.initiate_connect()
-    session.receive_bytes(build_frame(encode_address(32), encode_address(1, 42), 0x73))
+    session.receive_bytes(
+        build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    )
 
     # 1. Association rejected
     session.initiate_association(password="wrong")
@@ -345,7 +365,11 @@ def test_session_error_handling() -> None:
 
     # 2. Get Access Error (OBJECT_UNDEFINED)
     session.request_attribute(
-        CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 99, 99, 99, 255), 2)
+        CosemAttribute(
+            InterfaceClass.DATA,
+            ObisCode(0, 0, 99, 99, 99, 255),
+            DEFAULT_COSEM_ATTRIBUTE_ID,
+        )
     )
     error_apdu = bytes.fromhex("c401c10104")
     error_frame = build_frame(
@@ -365,27 +389,27 @@ def test_session_error_handling() -> None:
     assert len(events) == 1
     assert isinstance(events[0], ProtocolErrorEvent)
 
-    # 4. DM frame delivers DisconnectedEvent (both 0x1F and 0x0F)
-    dm_frame = build_frame(encode_address(32), encode_address(1, 42), 0x1F)
+    # 4. DM frame delivers DisconnectedEvent (both DM_FINAL and DM)
+    dm_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.DM_FINAL)
     events = session.receive_bytes(dm_frame)
     assert len(events) == 1
     assert isinstance(events[0], DisconnectedEvent)
     assert session.state == SessionState.DISCONNECTED
 
-    dm_frame_no_final = build_frame(encode_address(32), encode_address(1, 42), 0x0F)
+    dm_frame_no_final = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.DM)
     events = session.receive_bytes(dm_frame_no_final)
     assert len(events) == 1
     assert isinstance(events[0], DisconnectedEvent)
 
     # 5. DISC frame sent by meter disconnects session
-    disc_frame = build_frame(encode_address(32), encode_address(1, 42), 0x53)
+    disc_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.DISC)
     events = session.receive_bytes(disc_frame)
     assert len(events) == 1
     assert isinstance(events[0], DisconnectedEvent)
 
     # 6. Unexpected control byte delivers ProtocolErrorEvent
     unknown_control_frame = build_frame(
-        encode_address(32), encode_address(1, 42), 0x93
+        encode_address(32), encode_address(1, 42), HdlcControls.SNRM
     )  # unexpected SNRM from meter
     session._state = SessionState.ASSOCIATED
     events = session.receive_bytes(unknown_control_frame)
@@ -462,7 +486,7 @@ def test_session_error_handling() -> None:
 
     # 14. UA received while CONNECTED (spontaneous UA keepalive)
     session._state = SessionState.CONNECTED
-    spontaneous_ua = build_frame(encode_address(32), encode_address(1, 42), 0x73)
+    spontaneous_ua = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     events = session.receive_bytes(spontaneous_ua)
     assert len(events) == 1
     assert isinstance(events[0], ConnectedEvent)

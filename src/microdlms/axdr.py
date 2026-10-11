@@ -2,20 +2,47 @@
 
 from __future__ import annotations
 
-from typing import Any
+from enum import IntEnum
+from typing import Any, Final
 
 from microdlms.exceptions import ProtocolError
 
+AXDR_MULTI_BYTE_LENGTH_FLAG: Final = 0x80
+AXDR_LENGTH_VALUE_MASK: Final = 0x7F
+BITS_PER_BYTE: Final = 8
+
+
+class AxdrTags(IntEnum):
+    """DLMS/COSEM A-XDR data type tags."""
+
+    NULL_DATA = 0x00
+    ARRAY = 0x01
+    STRUCTURE = 0x02
+    BOOLEAN = 0x03
+    BIT_STRING = 0x04
+    DOUBLE_LONG = 0x05
+    DOUBLE_LONG_UNSIGNED = 0x06
+    OCTET_STRING = 0x09
+    VISIBLE_STRING = 0x0A
+    INTEGER = 0x0F
+    LONG = 0x10
+    UNSIGNED = 0x11
+    LONG_UNSIGNED = 0x12
+    LONG64 = 0x14
+    LONG64_UNSIGNED = 0x15
+    ENUM = 0x16
+
+
 _INTEGER_TAG_SPECS: dict[int, tuple[int, bool]] = {
-    0x05: (4, True),  # double-long (int32 signed)
-    0x06: (4, False),  # double-long-unsigned (uint32 unsigned)
-    0x0F: (1, True),  # integer (int8 signed)
-    0x10: (2, True),  # long (int16 signed)
-    0x11: (1, False),  # unsigned (uint8 unsigned)
-    0x12: (2, False),  # long-unsigned (uint16 unsigned)
-    0x14: (8, True),  # long64 (int64 signed)
-    0x15: (8, False),  # long64-unsigned (uint64 unsigned)
-    0x16: (1, False),  # enum (uint8 unsigned)
+    AxdrTags.DOUBLE_LONG: (4, True),
+    AxdrTags.DOUBLE_LONG_UNSIGNED: (4, False),
+    AxdrTags.INTEGER: (1, True),
+    AxdrTags.LONG: (2, True),
+    AxdrTags.UNSIGNED: (1, False),
+    AxdrTags.LONG_UNSIGNED: (2, False),
+    AxdrTags.LONG64: (8, True),
+    AxdrTags.LONG64_UNSIGNED: (8, False),
+    AxdrTags.ENUM: (1, False),
 }
 
 
@@ -60,9 +87,9 @@ class AxdrReader:
     def read_length(self) -> int:
         """Read A-XDR length field supporting single-byte and multi-byte encoding."""
         initial = self.read_byte()
-        if initial < 0x80:
+        if initial < AXDR_MULTI_BYTE_LENGTH_FLAG:
             return initial
-        length_bytes_count = initial & 0x7F
+        length_bytes_count = initial & AXDR_LENGTH_VALUE_MASK
         if length_bytes_count == 0:
             raise ProtocolError("Indefinite length encoding is not allowed in DLMS A-XDR")
         length_bytes = self.read_bytes(length_bytes_count)
@@ -72,30 +99,25 @@ class AxdrReader:
         """Decode the next typed value from the buffer."""
         tag = self.read_byte()
 
-        # 0x00: null-data
-        if tag == 0x00:
+        if tag == AxdrTags.NULL_DATA:
             return None
 
-        # 0x01: array, 0x02: structure
-        if tag in (0x01, 0x02):
+        if tag in (AxdrTags.ARRAY, AxdrTags.STRUCTURE):
             count = self.read_length()
             return [self.decode_value() for _ in range(count)]
 
-        # 0x03: boolean
-        if tag == 0x03:
+        if tag == AxdrTags.BOOLEAN:
             return self.read_byte() != 0
 
-        # 0x04: bit-string
-        if tag == 0x04:
+        if tag == AxdrTags.BIT_STRING:
             bit_count = self.read_length()
-            byte_count = (bit_count + 7) // 8
+            byte_count = (bit_count + BITS_PER_BYTE - 1) // BITS_PER_BYTE
             return self.read_bytes(byte_count)
 
-        # 0x09: octet-string, 0x0A: visible-string
-        if tag in (0x09, 0x0A):
+        if tag in (AxdrTags.OCTET_STRING, AxdrTags.VISIBLE_STRING):
             length = self.read_length()
             raw = self.read_bytes(length)
-            return raw.decode("utf-8", errors="replace") if tag == 0x0A else raw
+            return raw.decode("utf-8", errors="replace") if tag == AxdrTags.VISIBLE_STRING else raw
 
         int_spec = _INTEGER_TAG_SPECS.get(tag)
         if int_spec is not None:
@@ -116,7 +138,9 @@ def decode_axdr(data: bytes) -> Any:
 
 def encode_axdr_length(length: int) -> bytes:
     """Encode an A-XDR length value."""
-    if length < 0x80:
+    if length < AXDR_MULTI_BYTE_LENGTH_FLAG:
         return bytes([length])
-    length_bytes = length.to_bytes((length.bit_length() + 7) // 8, "big")
-    return bytes([0x80 | len(length_bytes)]) + length_bytes
+    length_bytes = length.to_bytes(
+        (length.bit_length() + BITS_PER_BYTE - 1) // BITS_PER_BYTE, "big"
+    )
+    return bytes([AXDR_MULTI_BYTE_LENGTH_FLAG | len(length_bytes)]) + length_bytes

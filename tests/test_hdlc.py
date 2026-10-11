@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from microdlms.const import HdlcControls
 from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import (
     HDLC_FLAG,
@@ -86,7 +87,7 @@ def test_build_and_parse_unnumbered_frame() -> None:
 
     # SNRM frame
     snrm_frame = build_frame(
-        dest_address=destination_address, src_address=source_address, control=0x93
+        dest_address=destination_address, src_address=source_address, control=HdlcControls.SNRM
     )
     assert snrm_frame.startswith(b"\x7e")
     assert snrm_frame.endswith(b"\x7e")
@@ -94,7 +95,7 @@ def test_build_and_parse_unnumbered_frame() -> None:
     parsed = parse_hdlc_frame(snrm_frame)
     assert parsed.dest_address == destination_address
     assert parsed.src_address == source_address
-    assert parsed.control == 0x93
+    assert parsed.control == HdlcControls.SNRM
     assert parsed.is_iframe is False
     assert parsed.hcs is None
     assert parsed.send_seq is None
@@ -102,10 +103,10 @@ def test_build_and_parse_unnumbered_frame() -> None:
 
     # DISC frame
     disc_frame = build_frame(
-        dest_address=destination_address, src_address=source_address, control=0x53
+        dest_address=destination_address, src_address=source_address, control=HdlcControls.DISC
     )
     parsed_disc = parse_hdlc_frame(disc_frame)
-    assert parsed_disc.control == 0x53
+    assert parsed_disc.control == HdlcControls.DISC
     assert parsed_disc.is_iframe is False
 
 
@@ -142,7 +143,7 @@ def test_parse_frame_errors() -> None:
         parse_hdlc_frame(b"\x00\xa0\x08\x02\x55\x41\x93\xe9\x57\x7e")
 
     # Corrupted FCS
-    valid_frame = build_frame(encode_address(1, 42), encode_address(32), 0x93)
+    valid_frame = build_frame(encode_address(1, 42), encode_address(32), HdlcControls.SNRM)
     corrupted_frame_check_sequence = bytearray(valid_frame)
     corrupted_frame_check_sequence[-2] ^= 0xFF
     with pytest.raises(ProtocolError, match="FCS check failed"):
@@ -176,8 +177,8 @@ def test_parse_frame_errors() -> None:
 
 def test_slice_hdlc_frames() -> None:
     """Test extracting complete frames from noisy or fragmented serial byte streams."""
-    frame_1 = build_frame(encode_address(1, 42), encode_address(32), 0x93)
-    frame_2 = build_frame(encode_address(1, 42), encode_address(32), 0x53)
+    frame_1 = build_frame(encode_address(1, 42), encode_address(32), HdlcControls.SNRM)
+    frame_2 = build_frame(encode_address(1, 42), encode_address(32), HdlcControls.DISC)
 
     # 1. Single frame
     buffer = bytearray(frame_1)
@@ -232,8 +233,10 @@ def test_slice_hdlc_frames() -> None:
 
 def test_hdlc_frame_property_and_truncation_branches() -> None:
     """Test S-frame recv_seq, U-frame recv_seq is None, and frame truncation before control byte."""
-    # U-frame (control 0x73): recv_seq is None
-    parsed_ua_frame = parse_hdlc_frame(build_frame(encode_address(32), encode_address(1, 42), 0x73))
+    # U-frame (control UA_FINAL): recv_seq is None
+    parsed_ua_frame = parse_hdlc_frame(
+        build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    )
     assert parsed_ua_frame.recv_seq is None
     assert parsed_ua_frame.poll_final is True
 
@@ -276,8 +279,8 @@ def test_llc_encapsulation() -> None:
 
 def test_shared_flag_slicing() -> None:
     """Verify that back-to-back frames sharing a single 0x7E delimiter are both extracted."""
-    frame_1 = build_frame(encode_address(32), encode_address(1, 42), 0x73)
-    frame_2 = build_frame(encode_address(32), encode_address(1, 42), 0x53)
+    frame_1 = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    frame_2 = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.DISC)
     # Concatenate with a shared flag (frame_1's closing 0x7e serves as frame_2's opening 0x7e)
     shared_flag_frames = frame_1 + frame_2[1:]
     buffer = bytearray(shared_flag_frames)
@@ -304,7 +307,9 @@ def test_multibyte_address_encoding_and_frame_overflow() -> None:
     # Frame length overflow in U-frame (> 2047 bytes)
     huge_info = b"\x00" * 2050
     with pytest.raises(ProtocolError, match="exceeds maximum HDLC frame length"):
-        build_frame(encode_address(32), encode_address(1, 42), 0x93, information=huge_info)
+        build_frame(
+            encode_address(32), encode_address(1, 42), HdlcControls.SNRM, information=huge_info
+        )
 
     # Frame length overflow in I-frame
     with pytest.raises(ProtocolError, match="exceeds maximum HDLC frame length"):
@@ -316,10 +321,22 @@ def test_multibyte_address_encoding_and_frame_overflow() -> None:
         )
 
     # Corrupt format type in parse_hdlc_frame (not type 3 / 0xA)
-    frame_bytes = bytearray(build_frame(encode_address(32), encode_address(1, 42), 0x73))
+    frame_bytes = bytearray(
+        build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    )
     frame_bytes[1] = 0x90  # upper nibble 9 instead of A
     content = frame_bytes[1:-3]
     frame_check_sequence = calculate_crc16(content)
     frame_bytes[-3:-1] = frame_check_sequence.to_bytes(2, "little")
     with pytest.raises(ProtocolError, match="Unsupported HDLC frame format type"):
         parse_hdlc_frame(bytes(frame_bytes))
+
+
+def test_hdlc_control_enum() -> None:
+    """Verify HdlcControls IntEnum members and values."""
+    assert HdlcControls.SNRM.value == 0x93
+    assert HdlcControls.DISC.value == 0x53
+    assert HdlcControls.UA_FINAL.value == 0x73
+    assert HdlcControls.UA.value == 0x63
+    assert HdlcControls.DM_FINAL.value == 0x1F
+    assert HdlcControls.DM.value == 0x0F

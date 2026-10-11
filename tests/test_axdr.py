@@ -4,89 +4,101 @@ from __future__ import annotations
 
 import pytest
 
-from microdlms.axdr import AxdrReader, decode_axdr, encode_axdr_length
+from microdlms.axdr import AxdrReader, AxdrTags, decode_axdr, encode_axdr_length
 from microdlms.exceptions import ProtocolError
 
 
 def test_axdr_primitive_integer_types() -> None:
     """Test all DLMS integer tags: signed/unsigned 8, 16, 32, and 64 bits."""
-    # 0x0F: integer (int8)
-    assert decode_axdr(b"\x0f\x00") == 0
-    assert decode_axdr(b"\x0f\x7f") == 127
-    assert decode_axdr(b"\x0f\x80") == -128
-    assert decode_axdr(b"\x0f\xfe") == -2
+    assert decode_axdr(bytes([AxdrTags.INTEGER, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.INTEGER, 0x7F])) == 127
+    assert decode_axdr(bytes([AxdrTags.INTEGER, 0x80])) == -128
+    assert decode_axdr(bytes([AxdrTags.INTEGER, 0xFE])) == -2
 
-    # 0x11: unsigned (uint8)
-    assert decode_axdr(b"\x11\x00") == 0
-    assert decode_axdr(b"\x11\xff") == 255
+    assert decode_axdr(bytes([AxdrTags.UNSIGNED, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.UNSIGNED, 0xFF])) == 255
 
-    # 0x10: long (int16)
-    assert decode_axdr(b"\x10\x00\x00") == 0
-    assert decode_axdr(b"\x10\x7f\xff") == 32767
-    assert decode_axdr(b"\x10\x80\x00") == -32768
-    assert decode_axdr(b"\x10\x02\xd9") == 729
+    assert decode_axdr(bytes([AxdrTags.LONG, 0x00, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.LONG, 0x7F, 0xFF])) == 32767
+    assert decode_axdr(bytes([AxdrTags.LONG, 0x80, 0x00])) == -32768
+    assert decode_axdr(bytes([AxdrTags.LONG, 0x02, 0xD9])) == 729
 
-    # 0x12: long-unsigned (uint16)
-    assert decode_axdr(b"\x12\x00\x00") == 0
-    assert decode_axdr(b"\x12\xff\xff") == 65535
-    assert decode_axdr(b"\x12\x55\xcf") == 21967
+    assert decode_axdr(bytes([AxdrTags.LONG_UNSIGNED, 0x00, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.LONG_UNSIGNED, 0xFF, 0xFF])) == 65535
+    assert decode_axdr(bytes([AxdrTags.LONG_UNSIGNED, 0x55, 0xCF])) == 21967
 
-    # 0x05: double-long (int32)
-    assert decode_axdr(b"\x05\x00\x00\x00\x00") == 0
-    assert decode_axdr(b"\x05\x7f\xff\xff\xff") == 2147483647
-    assert decode_axdr(b"\x05\x80\x00\x00\x00") == -2147483648
-    assert decode_axdr(b"\x05\x00\x00\xe9\x8e") == 59790
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG, 0x00, 0x00, 0x00, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG, 0x7F, 0xFF, 0xFF, 0xFF])) == 2147483647
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG, 0x80, 0x00, 0x00, 0x00])) == -2147483648
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG, 0x00, 0x00, 0xE9, 0x8E])) == 59790
 
-    # 0x06: double-long-unsigned (uint32)
-    assert decode_axdr(b"\x06\x00\x00\x00\x00") == 0
-    assert decode_axdr(b"\x06\xff\xff\xff\xff") == 4294967295
-    assert decode_axdr(b"\x06\x00\x00\x08\x11") == 2065
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG_UNSIGNED, 0x00, 0x00, 0x00, 0x00])) == 0
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG_UNSIGNED, 0xFF, 0xFF, 0xFF, 0xFF])) == 4294967295
+    assert decode_axdr(bytes([AxdrTags.DOUBLE_LONG_UNSIGNED, 0x00, 0x00, 0x08, 0x11])) == 2065
 
-    # 0x14: long64 (int64)
-    assert decode_axdr(b"\x14\x00\x00\x00\x00\x00\x00\x00\x01") == 1
-    assert decode_axdr(b"\x14\xff\xff\xff\xff\xff\xff\xff\xff") == -1
+    assert decode_axdr(bytes([AxdrTags.LONG64, 0, 0, 0, 0, 0, 0, 0, 1])) == 1
+    assert decode_axdr(bytes([AxdrTags.LONG64]) + (b"\xff" * 8)) == -1
 
-    # 0x15: long64-unsigned (uint64)
-    assert decode_axdr(b"\x15\x00\x00\x00\x00\x00\x00\x00\x02") == 2
+    assert decode_axdr(bytes([AxdrTags.LONG64_UNSIGNED, 0, 0, 0, 0, 0, 0, 0, 2])) == 2
 
-    # 0x16: enum (uint8)
-    assert decode_axdr(b"\x16\x23") == 35
+    assert decode_axdr(bytes([AxdrTags.ENUM, 0x23])) == 35
 
 
 def test_axdr_string_and_bytes_types() -> None:
     """Test octet-string, visible-string, and boolean types."""
-    # 0x00: null-data
-    assert decode_axdr(b"\x00") is None
+    assert decode_axdr(bytes([AxdrTags.NULL_DATA])) is None
 
-    # 0x03: boolean
-    assert decode_axdr(b"\x03\x01") is True
-    assert decode_axdr(b"\x03\x00") is False
+    assert decode_axdr(bytes([AxdrTags.BOOLEAN, 0x01])) is True
+    assert decode_axdr(bytes([AxdrTags.BOOLEAN, 0x00])) is False
 
-    # 0x04: bit-string (count in bits)
-    # 8 bits = 1 byte
-    assert decode_axdr(b"\x04\x08\xab") == b"\xab"
+    assert decode_axdr(bytes([AxdrTags.BIT_STRING, 8, 0xAB])) == b"\xab"
 
-    # 0x09: octet-string
-    assert decode_axdr(b"\x09\x00") == b""
-    assert decode_axdr(b"\x09\x04\xde\xad\xbe\xef") == b"\xde\xad\xbe\xef"
+    assert decode_axdr(bytes([AxdrTags.OCTET_STRING, 0])) == b""
+    assert (
+        decode_axdr(bytes([AxdrTags.OCTET_STRING, 4, 0xDE, 0xAD, 0xBE, 0xEF]))
+        == b"\xde\xad\xbe\xef"
+    )
 
-    # 0x0A: visible-string
-    assert decode_axdr(b"\x0a\x00") == ""
-    assert decode_axdr(b"\x0a\x0841920942") == "41920942"
+    assert decode_axdr(bytes([AxdrTags.VISIBLE_STRING, 0])) == ""
+    assert decode_axdr(bytes([AxdrTags.VISIBLE_STRING, 8]) + b"41920942") == "41920942"
 
 
 def test_axdr_composite_types() -> None:
     """Test array and structure decoding including scaler-unit structures."""
-    # 0x02: structure of 2 items: int8 (-2) and enum (35)
-    scaler_unit_bytes = b"\x02\x02\x0f\xfe\x16\x23"
+    scaler_unit_bytes = bytes([AxdrTags.STRUCTURE, 2, AxdrTags.INTEGER, 0xFE, AxdrTags.ENUM, 0x23])
     assert decode_axdr(scaler_unit_bytes) == [-2, 35]
 
-    # 0x01: array of 3 elements
-    array_bytes = b"\x01\x03\x11\x0a\x11\x0b\x11\x0c"
+    array_bytes = bytes(
+        [
+            AxdrTags.ARRAY,
+            3,
+            AxdrTags.UNSIGNED,
+            10,
+            AxdrTags.UNSIGNED,
+            11,
+            AxdrTags.UNSIGNED,
+            12,
+        ]
+    )
     assert decode_axdr(array_bytes) == [10, 11, 12]
 
-    # Nested structure
-    nested = b"\x02\x02\x01\x02\x11\x01\x11\x02\x0a\x02OK"
+    nested = (
+        bytes(
+            [
+                AxdrTags.STRUCTURE,
+                2,
+                AxdrTags.ARRAY,
+                2,
+                AxdrTags.UNSIGNED,
+                1,
+                AxdrTags.UNSIGNED,
+                2,
+                AxdrTags.VISIBLE_STRING,
+                2,
+            ]
+        )
+        + b"OK"
+    )
     assert decode_axdr(nested) == [[1, 2], "OK"]
 
 
@@ -138,3 +150,23 @@ def test_axdr_error_handling() -> None:
     reader = AxdrReader(b"\x01\x02")
     with pytest.raises(ProtocolError, match="Invalid negative"):
         reader.read_bytes(-1)
+
+
+def test_axdr_tags_enum() -> None:
+    """Verify AxdrTags IntEnum members and values."""
+    assert AxdrTags.NULL_DATA.value == 0x00
+    assert AxdrTags.ARRAY.value == 0x01
+    assert AxdrTags.STRUCTURE.value == 0x02
+    assert AxdrTags.BOOLEAN.value == 0x03
+    assert AxdrTags.BIT_STRING.value == 0x04
+    assert AxdrTags.DOUBLE_LONG.value == 0x05
+    assert AxdrTags.DOUBLE_LONG_UNSIGNED.value == 0x06
+    assert AxdrTags.OCTET_STRING.value == 0x09
+    assert AxdrTags.VISIBLE_STRING.value == 0x0A
+    assert AxdrTags.INTEGER.value == 0x0F
+    assert AxdrTags.LONG.value == 0x10
+    assert AxdrTags.UNSIGNED.value == 0x11
+    assert AxdrTags.LONG_UNSIGNED.value == 0x12
+    assert AxdrTags.LONG64.value == 0x14
+    assert AxdrTags.LONG64_UNSIGNED.value == 0x15
+    assert AxdrTags.ENUM.value == 0x16

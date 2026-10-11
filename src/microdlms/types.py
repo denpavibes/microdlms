@@ -6,7 +6,15 @@ import datetime
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, Self
+from typing import Any, Final, Self
+
+COSEM_DATE_TIME_LENGTH: Final = 12
+YEAR_NOT_SPECIFIED: Final = 0xFFFF
+DATE_TIME_FIELD_NOT_SPECIFIED: Final = 0xFF
+DEVIATION_NOT_SPECIFIED: Final = -32768
+MAX_DEVIATION_MINUTES: Final = 1439
+MAX_HUNDREDTHS: Final = 100
+HUNDREDTHS_TO_MICROSECONDS: Final = 10000
 
 
 class AssociationResult(IntEnum):
@@ -126,8 +134,10 @@ class CosemDateTime:
     @classmethod
     def from_bytes(cls, data: bytes) -> Self:
         """Parse DLMS 12-byte octet string into CosemDateTime."""
-        if len(data) != 12:
-            raise ValueError(f"COSEM date-time requires 12 bytes, got {len(data)}")
+        if len(data) != COSEM_DATE_TIME_LENGTH:
+            raise ValueError(
+                f"COSEM date-time requires {COSEM_DATE_TIME_LENGTH} bytes, got {len(data)}"
+            )
         year = int.from_bytes(data[0:2], "big")
         month = data[2]
         day = data[3]
@@ -137,7 +147,7 @@ class CosemDateTime:
         second = data[7]
         hundredths = data[8]
         raw_deviation = int.from_bytes(data[9:11], "big", signed=True)
-        deviation = None if raw_deviation == -32768 else raw_deviation
+        deviation = None if raw_deviation == DEVIATION_NOT_SPECIFIED else raw_deviation
         status = data[11]
         return cls(
             year=year,
@@ -154,21 +164,32 @@ class CosemDateTime:
 
     def as_datetime(self) -> datetime.datetime | None:
         """Convert to standard Python datetime with timezone offset if date is specified."""
-        if self.year == 0xFFFF or self.month == 0xFF or self.day == 0xFF:
+        if (
+            self.year == YEAR_NOT_SPECIFIED
+            or self.month == DATE_TIME_FIELD_NOT_SPECIFIED
+            or self.day == DATE_TIME_FIELD_NOT_SPECIFIED
+        ):
             return None
         time_zone = (
             datetime.timezone(datetime.timedelta(minutes=self.deviation))
-            if (self.deviation is not None and -1439 <= self.deviation <= 1439)
+            if (
+                self.deviation is not None
+                and -MAX_DEVIATION_MINUTES <= self.deviation <= MAX_DEVIATION_MINUTES
+            )
             else datetime.UTC
         )
-        microsecond = (self.hundredths * 10000) if (0 <= self.hundredths < 100) else 0
+        microsecond = (
+            (self.hundredths * HUNDREDTHS_TO_MICROSECONDS)
+            if (0 <= self.hundredths < MAX_HUNDREDTHS)
+            else 0
+        )
         return datetime.datetime(
             year=self.year,
             month=self.month,
             day=self.day,
-            hour=self.hour if self.hour != 0xFF else 0,
-            minute=self.minute if self.minute != 0xFF else 0,
-            second=self.second if self.second != 0xFF else 0,
+            hour=self.hour if self.hour != DATE_TIME_FIELD_NOT_SPECIFIED else 0,
+            minute=self.minute if self.minute != DATE_TIME_FIELD_NOT_SPECIFIED else 0,
+            second=self.second if self.second != DATE_TIME_FIELD_NOT_SPECIFIED else 0,
             microsecond=microsecond,
             tzinfo=time_zone,
         )

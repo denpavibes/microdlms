@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
-from microdlms.axdr import decode_axdr
+from microdlms.axdr import AxdrTags, decode_axdr
 from microdlms.client import AsyncMeterClient
+from microdlms.const import (
+    DEFAULT_CLIENT_LOGICAL_ADDRESS,
+    DEFAULT_SERVER_LOGICAL_ADDRESS,
+    ApduTags,
+    HdlcControls,
+)
 from microdlms.exceptions import (
     AuthenticationError,
     CommunicationError,
@@ -61,4 +67,9 @@ __all__ = [
     "DataAccessError",
     "ProtocolError",
     "decode_axdr",
+    "AxdrTags",
+    "ApduTags",
+    "HdlcControls",
+    "DEFAULT_CLIENT_LOGICAL_ADDRESS",
+    "DEFAULT_SERVER_LOGICAL_ADDRESS",
 ]

@@ -11,6 +11,26 @@ HDLC_FLAG: Final = 0x7E
 LLC_REQ_HEADER: Final = b"\xe6\xe6\x00"
 LLC_RESP_HEADER: Final = b"\xe6\xe7\x00"
 
+CRC16_INIT: Final = 0xFFFF
+CRC16_RESIDUE: Final = 0xF0B8
+
+HDLC_ADDRESS_EXTENSION_BIT: Final = 0x01
+HDLC_ADDRESS_VALUE_MASK: Final = 0x7F
+HDLC_ADDRESS_SHORT_LIMIT: Final = 0x80
+
+MAX_HDLC_FRAME_LENGTH: Final = 0x07FF
+HDLC_FRAME_LENGTH_MASK: Final = 0x07FF
+HDLC_FRAME_FORMAT_TYPE_3: Final = 0xA000
+HDLC_FRAME_TYPE_3_PREFIX: Final = 0xA0
+HDLC_FRAME_TYPE_MASK: Final = 0xF0
+HDLC_FORMAT_TYPE_3: Final = 0x0A
+
+HDLC_CONTROL_FRAME_TYPE_MASK: Final = 0x01
+HDLC_CONTROL_S_FRAME_MASK: Final = 0x03
+HDLC_CONTROL_S_FRAME_VALUE: Final = 0x01
+HDLC_SEQUENCE_MASK: Final = 0x07
+HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
+
 # Precomputed CRC-16-CCITT / X.25 lookup table (polynomial 0x8408 reversed)
 # fmt: off
 _CRC16_TABLE: Final[list[int]] = [
@@ -52,7 +72,7 @@ _CRC16_TABLE: Final[list[int]] = [
 
 def calculate_crc16(data: bytes | bytearray) -> int:
     """Calculate 16-bit CRC-CCITT (X.25) checksum over data."""
-    crc = 0xFFFF
+    crc = CRC16_INIT
     for byte_value in data:
         crc = (crc >> 8) ^ _CRC16_TABLE[(crc ^ byte_value) & 0xFF]
     return (~crc) & 0xFFFF
@@ -60,24 +80,24 @@ def calculate_crc16(data: bytes | bytearray) -> int:
 
 def check_crc16(data_with_crc: bytes | bytearray) -> bool:
     """Verify that CRC computed over data including its little-endian CRC equals residue 0xF0B8."""
-    crc = 0xFFFF
+    crc = CRC16_INIT
     for byte_value in data_with_crc:
         crc = (crc >> 8) ^ _CRC16_TABLE[(crc ^ byte_value) & 0xFF]
-    return crc == 0xF0B8
+    return crc == CRC16_RESIDUE
 
 
 def _encode_address_component(value: int, is_last: bool = False) -> bytes:
     """Encode an integer address component using 7 bits per byte with extension bits."""
-    if value < 0x80:
+    if value < HDLC_ADDRESS_SHORT_LIMIT:
         byte_value = (value << 1) & 0xFE
         if is_last:
-            byte_value |= 1
+            byte_value |= HDLC_ADDRESS_EXTENSION_BIT
         return bytes([byte_value])
 
     chunks: list[int] = []
     remaining_value = value
     while remaining_value > 0:
-        chunks.append(remaining_value & 0x7F)
+        chunks.append(remaining_value & HDLC_ADDRESS_VALUE_MASK)
         remaining_value >>= 7
     chunks.reverse()
 
@@ -85,7 +105,7 @@ def _encode_address_component(value: int, is_last: bool = False) -> bytes:
     for index, chunk in enumerate(chunks):
         byte_value = (chunk << 1) & 0xFE
         if is_last and (index == len(chunks) - 1):
-            byte_value |= 1
+            byte_value |= HDLC_ADDRESS_EXTENSION_BIT
         output_bytes.append(byte_value)
     return bytes(output_bytes)
 
@@ -105,7 +125,7 @@ def decode_address(data: bytes, offset: int = 0) -> tuple[bytes, int]:
     while offset < len(data):
         byte_value = data[offset]
         offset += 1
-        if byte_value & 1:
+        if byte_value & HDLC_ADDRESS_EXTENSION_BIT:
             return data[start_offset:offset], offset
     raise ProtocolError(f"Incomplete HDLC address at offset {start_offset}")
 
@@ -113,7 +133,11 @@ def decode_address(data: bytes, offset: int = 0) -> tuple[bytes, int]:
 def make_i_control(send_seq: int, recv_seq: int, poll: bool = True) -> int:
     """Pack HDLC Information frame control byte with N(S), N(R), and Poll bit."""
     poll_bit = 1 if poll else 0
-    return ((recv_seq & 0x07) << 5) | (poll_bit << 4) | ((send_seq & 0x07) << 1)
+    return (
+        ((recv_seq & HDLC_SEQUENCE_MASK) << 5)
+        | (poll_bit << 4)
+        | ((send_seq & HDLC_SEQUENCE_MASK) << 1)
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,24 +157,26 @@ class HdlcFrame:
     @property
     def is_iframe(self) -> bool:
         """True if control byte indicates an Information frame."""
-        return (self.control & 1) == 0
+        return (self.control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
 
     @property
     def send_seq(self) -> int | None:
         """N(S) send sequence number for I-frames."""
-        return (self.control >> 1) & 0x07 if self.is_iframe else None
+        return (self.control >> 1) & HDLC_SEQUENCE_MASK if self.is_iframe else None
 
     @property
     def recv_seq(self) -> int | None:
         """N(R) receive sequence number for I-frames or S-frames."""
-        if self.is_iframe or ((self.control & 0x03) == 0x01):
-            return (self.control >> 5) & 0x07
+        if self.is_iframe or (
+            (self.control & HDLC_CONTROL_S_FRAME_MASK) == HDLC_CONTROL_S_FRAME_VALUE
+        ):
+            return (self.control >> 5) & HDLC_SEQUENCE_MASK
         return None
 
     @property
     def poll_final(self) -> bool:
         """Value of Poll/Final bit."""
-        return bool((self.control >> 4) & 1)
+        return bool((self.control & HDLC_CONTROL_POLL_FINAL_BIT) != 0)
 
 
 def build_frame(
@@ -160,18 +186,19 @@ def build_frame(
     information: bytes | None = None,
 ) -> bytes:
     """Build a complete HDLC frame including format, addresses, HCS (if I-frame), and FCS."""
-    is_information_frame = (control & 1) == 0
+    is_information_frame = (control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
     info_length = len(information) if information is not None else 0
 
     if is_information_frame:
         # Header length without format word = len(dest) + len(src) + 1 + 2 (hcs)
         # Total frame length between flags = header + info_length + 2 (fcs)
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + 2 + info_length + 2
-        if frame_length > 0x07FF:
+        if frame_length > MAX_HDLC_FRAME_LENGTH:
             raise ProtocolError(
-                f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
+                f"Frame length {frame_length} exceeds maximum HDLC frame length "
+                f"{MAX_HDLC_FRAME_LENGTH}"
             )
-        format_word = 0xA000 | (frame_length & 0x07FF)
+        format_word = HDLC_FRAME_FORMAT_TYPE_3 | (frame_length & HDLC_FRAME_LENGTH_MASK)
         format_bytes = format_word.to_bytes(2, "big")
         header_data = format_bytes + dest_address + src_address + bytes([control])
         header_check_sequence = calculate_crc16(header_data).to_bytes(2, "little")
@@ -180,11 +207,12 @@ def build_frame(
         )
     else:
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + info_length + 2
-        if frame_length > 0x07FF:
+        if frame_length > MAX_HDLC_FRAME_LENGTH:
             raise ProtocolError(
-                f"Frame length {frame_length} exceeds maximum HDLC frame length 2047"
+                f"Frame length {frame_length} exceeds maximum HDLC frame length "
+                f"{MAX_HDLC_FRAME_LENGTH}"
             )
-        format_word = 0xA000 | (frame_length & 0x07FF)
+        format_word = HDLC_FRAME_FORMAT_TYPE_3 | (frame_length & HDLC_FRAME_LENGTH_MASK)
         format_bytes = format_word.to_bytes(2, "big")
         frame_body = (
             format_bytes
@@ -211,10 +239,13 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
 
     format_word = int.from_bytes(content[0:2], "big")
     format_type = (format_word >> 12) & 0x0F
-    if format_type != 0x0A:
-        raise ProtocolError(f"Unsupported HDLC frame format type: {format_type} (expected 10/0xA)")
+    if format_type != HDLC_FORMAT_TYPE_3:
+        raise ProtocolError(
+            f"Unsupported HDLC frame format type: {format_type} "
+            f"(expected 10/0x{HDLC_FORMAT_TYPE_3:X})"
+        )
     segmented = bool((format_word >> 11) & 0x01)
-    declared_length = format_word & 0x07FF
+    declared_length = format_word & HDLC_FRAME_LENGTH_MASK
     if declared_length != len(content):
         raise ProtocolError(
             f"Declared HDLC frame length {declared_length} "
@@ -228,7 +259,7 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
 
     control = content[offset]
     offset += 1
-    is_information_frame = (control & 1) == 0
+    is_information_frame = (control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
 
     header_check_sequence: bytes | None = None
     if is_information_frame:
@@ -275,7 +306,10 @@ def _align_buffer_to_flag(buffer: bytearray) -> bool:
 def _consume_frame(buffer: bytearray, total_length: int) -> bytes:
     """Extract frame bytes and slice buffer, handling shared boundary flags."""
     frame = bytes(buffer[:total_length])
-    if len(buffer) > total_length and (buffer[total_length] & 0xF0) == 0xA0:
+    if (
+        len(buffer) > total_length
+        and (buffer[total_length] & HDLC_FRAME_TYPE_MASK) == HDLC_FRAME_TYPE_3_PREFIX
+    ):
         del buffer[: total_length - 1]
     else:
         del buffer[:total_length]
@@ -284,11 +318,11 @@ def _consume_frame(buffer: bytearray, total_length: int) -> bytes:
 
 def _extract_next_frame(buffer: bytearray) -> bytes | None:
     """Extract next complete HDLC frame from buffer, or None if incomplete/invalid."""
-    if (buffer[1] & 0xF0) != 0xA0:
+    if (buffer[1] & HDLC_FRAME_TYPE_MASK) != HDLC_FRAME_TYPE_3_PREFIX:
         del buffer[:1]
         return None
 
-    declared_length = int.from_bytes(buffer[1:3], "big") & 0x07FF
+    declared_length = int.from_bytes(buffer[1:3], "big") & HDLC_FRAME_LENGTH_MASK
     total_length = declared_length + 2
 
     if len(buffer) < total_length:

@@ -72,6 +72,12 @@ prek run --all-files
 
 ### 3.3 Code Style & Naming Conventions
 - **Self-Descriptive Naming**: Ensure human-readable, self-descriptive names for variables, parameters, and attributes across both codebase and test suites. Avoid terse or cryptic abbreviations (e.g., use `position` over `pos`, `message` over `msg`, `frame_1` over `f1`).
+- **Self-Documenting Constants & Enums**: Avoid arbitrary integers or magic numbers paired with explanatory comments. Use descriptive `Final` constants or `IntEnum` classes instead so the code is understandable at a glance without comments (e.g., use `RESPONSE_TYPE_NORMAL: Final = 0x01` and `RESULT_TYPE_SUCCESS: Final = 0x00` instead of comments explaining `0x01` or `0x00`).
+- **Grouped Constants as Enums**: When constants form a related family (such as protocol tags or control bytes), group them using `IntEnum` (e.g., `AxdrTags`, `ApduTags`, `HdlcControls`).
+- **Plural Enum Names & Direct Usage**: Enums must be defined in plural form (e.g., `class ApduTags(IntEnum)`, `class HdlcControls(IntEnum)`, `class AxdrTags(IntEnum)`). Do not define singular-to-plural aliases (e.g., `ApduTags = ApduTag` or `ApduTag = ApduTags`) or redundant constants referencing enum members (e.g., `TAG_AARQ: Final = ApduTags.AARQ`); import and use the enum directly.
+- **Constant Scoping & Sharing**:
+  - If a constant appears only within a single module, keep it scoped within that module.
+  - If a constant can be shared across modules, define it in `microdlms.const` (`const.py`) and import it from there.
 
 ---
 
