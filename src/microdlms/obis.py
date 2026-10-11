@@ -34,7 +34,7 @@ class ObisCode:
             ("e", self.e),
             ("f", self.f),
         ):
-            if not (OBIS_GROUP_MIN <= value <= OBIS_GROUP_MAX):
+            if value < OBIS_GROUP_MIN or value > OBIS_GROUP_MAX:
                 raise ValueError(
                     f"OBIS group {name} must be within "
                     f"{OBIS_GROUP_MIN}..{OBIS_GROUP_MAX}, got {value}"
