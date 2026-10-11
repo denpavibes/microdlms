@@ -176,6 +176,18 @@ def test_aare_multibyte_tag_and_unknown_result() -> None:
     result_bad, _ = decode_aare(bad_response_apdu)
     assert result_bad == AssociationResult.REJECTED_PERMANENT
 
+    # AARE with truncated inner tag where length exceeds buffer
+    truncated_inner_tag_apdu = b"\x61\x08\xa2\x03\x02\x01\x00\xbe\x05\x01"
+    result_truncated, diagnostic_truncated = decode_aare(truncated_inner_tag_apdu)
+    assert result_truncated == AssociationResult.ACCEPTED
+    assert diagnostic_truncated == 0
+
+    # AARE with diagnostic field not matching BER integer format
+    non_integer_diag_apdu = b"\x61\x07\xa2\x03\x02\x01\x00\xa3\x02\x00\x00"
+    result_non_int, diagnostic_non_int = decode_aare(non_integer_diag_apdu)
+    assert result_non_int == AssociationResult.ACCEPTED
+    assert diagnostic_non_int == 0
+
     # Get-Response with unrecognized DataAccessResult (e.g. 255) falls back to OTHER_REASON
     unknown_error_apdu = bytes.fromhex("c401c101ff")
     invoke_id, is_success, error_code = decode_get_response_normal(unknown_error_apdu)
