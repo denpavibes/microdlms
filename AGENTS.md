@@ -26,6 +26,9 @@ This document outlines architecture principles, operational standards, hardware 
 - **I/O Isolation**: All async I/O, timeouts, task orchestration, and socket management reside exclusively in `microdlms.client.AsyncMeterClient`.
 
 ### 2.2 Specification-Driven Design
+- **Zero Copyright / Clean-Room Contamination**:
+  - You MUST NOT copy, adapt, or replicate verbatim code, class hierarchies, internal structures, or method signatures from any non-OSI DLMS projects.
+  - The codebase must be an independent, clean-room implementation based strictly on the open DLMS Green Book / Blue Book standards and the captured physical meter frames provided in `tests/`.
 - **Open Standards**: Base protocol implementations on official open DLMS Blue Book and Green Book specifications.
 - **Test Vectors**: Validate behavior against verified physical meter frame captures in `tests/meter_fixtures.py`.
 
