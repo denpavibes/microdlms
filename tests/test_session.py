@@ -466,3 +466,48 @@ def test_session_error_handling() -> None:
     events = session.receive_bytes(spontaneous_ua)
     assert len(events) == 1
     assert isinstance(events[0], ConnectedEvent)
+
+
+def test_session_echo_filter_suppresses_reflected_frames() -> None:
+    """Verify DlmsSession drops reflected command frames only when echo_filter is enabled."""
+    client_address = encode_address(32)
+    server_address = encode_address(1, 42)
+    reflected_snrm = build_frame(
+        dest_address=server_address, src_address=client_address, control=0x93
+    )
+    valid_ua = build_frame(dest_address=client_address, src_address=server_address, control=0x73)
+
+    # 1. echo_filter=False (default): reflected frame is parsed and raises ProtocolErrorEvent
+    raw_session = DlmsSession(
+        client_address=32,
+        server_logical_address=1,
+        server_physical_address=42,
+        echo_filter=False,
+    )
+    raw_session.initiate_connect()
+    raw_events = raw_session.receive_bytes(reflected_snrm)
+    assert len(raw_events) == 1
+    assert isinstance(raw_events[0], ProtocolErrorEvent)
+    assert "Unexpected HDLC control byte: 0x93" in raw_events[0].message
+
+    # 2. echo_filter=True: reflected frame is dropped silently, and valid UA connects
+    filtered_session = DlmsSession(
+        client_address=32,
+        server_logical_address=1,
+        server_physical_address=42,
+        echo_filter=True,
+    )
+
+    def assert_state(current_session: DlmsSession, expected: SessionState) -> None:
+        assert current_session.state == expected
+
+    filtered_session.initiate_connect()
+    filtered_events = filtered_session.receive_bytes(reflected_snrm)
+    assert filtered_events == []
+    assert_state(filtered_session, SessionState.CONNECTING)
+
+    # Meter's UA response is processed normally
+    ua_events = filtered_session.receive_bytes(valid_ua)
+    assert len(ua_events) == 1
+    assert isinstance(ua_events[0], ConnectedEvent)
+    assert_state(filtered_session, SessionState.CONNECTED)

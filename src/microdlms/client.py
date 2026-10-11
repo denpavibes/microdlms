@@ -65,11 +65,13 @@ class AsyncMeterClient:
             server_logical_address=server_logical_address,
             server_physical_address=server_physical_address,
             system_title=system_title,
+            echo_filter=echo_filter,
         )
         self._reader: asyncio.StreamReader | None = None
         self._writer: Any = None
         self._event_queue: list[SessionEvent] = []
         self._pending_echo: bytearray = bytearray()
+        self._inbound_echo_buffer: bytearray = bytearray()
 
     @property
     def is_connected(self) -> bool:
@@ -89,6 +91,7 @@ class AsyncMeterClient:
             await self.disconnect()
 
         self._pending_echo.clear()
+        self._inbound_echo_buffer.clear()
 
         try:
             self._reader, self._writer = await serialx.open_serial_connection(
@@ -174,6 +177,7 @@ class AsyncMeterClient:
                 event for event in self._event_queue if not isinstance(event, ProtocolErrorEvent)
             ]
         self._pending_echo.clear()
+        self._inbound_echo_buffer.clear()
 
     def _raise_get_error(
         self,
@@ -185,6 +189,7 @@ class AsyncMeterClient:
         """Raise primary or current communication error if disconnected or out of retries."""
         if not self.is_connected or attempt == effective_retries:
             self._pending_echo.clear()
+            self._inbound_echo_buffer.clear()
             final_error = primary_error if primary_error is not None else error
             raise final_error from error
 
@@ -233,6 +238,7 @@ class AsyncMeterClient:
                 self._reader = None
             self._event_queue.clear()
             self._pending_echo.clear()
+            self._inbound_echo_buffer.clear()
 
     async def _flush_outbound(self) -> None:
         """Transmit any pending bytes from the session outbound buffer."""
@@ -240,6 +246,7 @@ class AsyncMeterClient:
         if outbound_bytes and self._writer is not None:
             if self.echo_filter:
                 self._pending_echo = bytearray(outbound_bytes)
+                self._inbound_echo_buffer.clear()
             self._writer.write(outbound_bytes)
             await self._writer.drain()
 
@@ -268,22 +275,34 @@ class AsyncMeterClient:
         if not self.echo_filter or not self._pending_echo or not data:
             return data
 
+        self._inbound_echo_buffer.extend(data)
+
         matching_count = 0
-        for data_byte, echo_byte in zip(data, self._pending_echo, strict=False):
-            if data_byte == echo_byte:
+        for buffer_byte, echo_byte in zip(
+            self._inbound_echo_buffer, self._pending_echo, strict=False
+        ):
+            if buffer_byte == echo_byte:
                 matching_count += 1
             else:
                 break
 
-        if matching_count > 0:
-            del self._pending_echo[:matching_count]
-            data = data[matching_count:]
-            _LOGGER.debug("Discarded %d echo bytes", matching_count)
+        if matching_count == len(self._inbound_echo_buffer) and matching_count < len(
+            self._pending_echo
+        ):
+            return b""
 
-        if not self._pending_echo or len(data) > 0:
+        if matching_count == len(self._pending_echo):
+            del self._inbound_echo_buffer[:matching_count]
             self._pending_echo.clear()
+            stripped_data = bytes(self._inbound_echo_buffer)
+            self._inbound_echo_buffer.clear()
+            _LOGGER.debug("Discarded %d echo bytes", matching_count)
+            return stripped_data
 
-        return data
+        self._pending_echo.clear()
+        released_data = bytes(self._inbound_echo_buffer)
+        self._inbound_echo_buffer.clear()
+        return released_data
 
     async def _wait_for_event(
         self,

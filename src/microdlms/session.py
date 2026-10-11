@@ -69,11 +69,13 @@ class DlmsSession:
         server_logical_address: int = 1,
         server_physical_address: int | None = None,
         system_title: bytes | None = None,
+        echo_filter: bool = False,
     ) -> None:
         self.client_address = client_address
         self.server_logical_address = server_logical_address
         self.server_physical_address = server_physical_address
         self.system_title = system_title
+        self.echo_filter = echo_filter
 
         self._destination_address_bytes = encode_address(
             server_logical_address, server_physical_address
@@ -277,6 +279,13 @@ class DlmsSession:
 
         return ProtocolErrorEvent(f"Unexpected HDLC control byte: 0x{control:02X}")
 
+    def _is_reflected_frame(self, frame: HdlcFrame) -> bool:
+        """Check if parsed HDLC frame is a reflection of the client's own outbound command."""
+        return (
+            frame.dest_address == self._destination_address_bytes
+            and frame.src_address == self._source_address_bytes
+        )
+
     def receive_bytes(self, data: bytes) -> list[SessionEvent]:
         """Ingest incoming raw serial bytes, decode HDLC frames, and yield resulting events."""
         self._inbound_buffer.extend(data)
@@ -288,6 +297,9 @@ class DlmsSession:
                 frame = parse_hdlc_frame(raw_frame)
             except ProtocolError as error:
                 events.append(ProtocolErrorEvent(str(error)))
+                continue
+
+            if self.echo_filter and self._is_reflected_frame(frame):
                 continue
 
             event = self._handle_iframe(frame) if frame.is_iframe else self._handle_uframe(frame)

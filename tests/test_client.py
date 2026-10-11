@@ -852,6 +852,7 @@ async def test_client_echo_filter_combined_chunk_exact_echo_stripped(
         client = AsyncMeterClient(
             port="COM1",
             password="111111",
+            server_physical_address=42,
             timeout=2.0,
             echo_filter=True,
         )
@@ -914,6 +915,7 @@ async def test_client_echo_filter_partial_and_mismatched_echo(
         client = AsyncMeterClient(
             port="COM1",
             password="111111",
+            server_physical_address=42,
             timeout=2.0,
             echo_filter=True,
         )
@@ -1014,26 +1016,34 @@ async def test_client_pending_echo_buffer_cleared_on_disconnect_and_reconnect() 
 
     # 1. Retry preparation clears buffer on both attempt 0 and retry attempt > 0
     client._pending_echo = bytearray(b"stale_bytes")
+    client._inbound_echo_buffer = bytearray(b"stale_inbound")
     await client._prepare_next_retry(attempt=0, delay=0.0)
     assert len(client._pending_echo) == 0
+    assert len(client._inbound_echo_buffer) == 0
 
     client._pending_echo = bytearray(b"stale_bytes")
+    client._inbound_echo_buffer = bytearray(b"stale_inbound")
     await client._prepare_next_retry(attempt=1, delay=0.0)
     assert len(client._pending_echo) == 0
+    assert len(client._inbound_echo_buffer) == 0
 
     # 2. Disconnect clears buffer
     client._pending_echo = bytearray(b"stale_bytes")
+    client._inbound_echo_buffer = bytearray(b"stale_inbound")
     await client.disconnect()
     assert len(client._pending_echo) == 0
+    assert len(client._inbound_echo_buffer) == 0
 
     # 3. Connection opening failure clears buffer
     client._pending_echo = bytearray(b"stale_bytes")
+    client._inbound_echo_buffer = bytearray(b"stale_inbound")
     with (
         patch("serialx.open_serial_connection", side_effect=OSError("Serial open failed")),
         pytest.raises(CommunicationError, match="Serial open failed"),
     ):
         await client.connect()
     assert len(client._pending_echo) == 0
+    assert len(client._inbound_echo_buffer) == 0
 
     # 4. Reconnect path with existing writer clears buffer and connects
     reader = MockReader()
@@ -1051,11 +1061,13 @@ async def test_client_pending_echo_buffer_cleared_on_disconnect_and_reconnect() 
     client._writer = writer
     client._session._state = SessionState.DISCONNECTED
     client._pending_echo = bytearray(b"stale_bytes")
+    client._inbound_echo_buffer = bytearray(b"stale_inbound")
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
         await client.connect()
         assert client.is_connected is True
         assert len(client._pending_echo) == 0
+        assert len(client._inbound_echo_buffer) == 0
 
 
 async def test_client_echo_filter_multi_chunk_fragmentation() -> None:
@@ -1113,6 +1125,7 @@ async def test_client_echo_filter_multi_chunk_fragmentation() -> None:
         client = AsyncMeterClient(
             port="COM1",
             password="111111",
+            server_physical_address=42,
             timeout=2.0,
             echo_filter=True,
         )
