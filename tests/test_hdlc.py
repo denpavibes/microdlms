@@ -10,6 +10,7 @@ from microdlms.hdlc import (
     LLC_REQ_HEADER,
     LLC_RESP_HEADER,
     HdlcControls,
+    HdlcFrameTypes,
     HdlcSupervisoryTypes,
     build_frame,
     calculate_crc16,
@@ -97,6 +98,7 @@ def test_build_and_parse_unnumbered_frame() -> None:
     assert parsed.dest_address == destination_address
     assert parsed.src_address == source_address
     assert parsed.control == HdlcControls.SNRM
+    assert parsed.frame_type == HdlcFrameTypes.UNNUMBERED
     assert parsed.is_iframe is False
     assert parsed.hcs is None
     assert parsed.send_seq is None
@@ -108,6 +110,7 @@ def test_build_and_parse_unnumbered_frame() -> None:
     )
     parsed_disc = parse_hdlc_frame(disc_frame)
     assert parsed_disc.control == HdlcControls.DISC
+    assert parsed_disc.frame_type == HdlcFrameTypes.UNNUMBERED
     assert parsed_disc.is_iframe is False
 
 
@@ -126,6 +129,7 @@ def test_build_and_parse_iframe() -> None:
     )
 
     parsed = parse_hdlc_frame(frame_bytes)
+    assert parsed.frame_type == HdlcFrameTypes.INFORMATION
     assert parsed.is_iframe is True
     assert parsed.send_seq == 2
     assert parsed.recv_seq == 3
@@ -343,6 +347,13 @@ def test_hdlc_control_enum() -> None:
     assert HdlcControls.DM.value == 0x0F
 
 
+def test_hdlc_frame_types_enum() -> None:
+    """Verify HdlcFrameTypes IntEnum members and discriminator values."""
+    assert HdlcFrameTypes.INFORMATION.value == 0x00
+    assert HdlcFrameTypes.SUPERVISORY.value == 0x01
+    assert HdlcFrameTypes.UNNUMBERED.value == 0x03
+
+
 def test_hdlc_supervisory_types_and_frame_properties() -> None:
     """Verify HdlcSupervisoryTypes enum members and S-frame properties on HdlcFrame."""
     assert HdlcSupervisoryTypes.RECEIVE_READY.value == 0x00
@@ -354,6 +365,7 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
     rr_frame = parse_hdlc_frame(
         build_frame(encode_address(32), encode_address(1, 42), control=0x51)
     )
+    assert rr_frame.frame_type == HdlcFrameTypes.SUPERVISORY
     assert rr_frame.is_sframe is True
     assert rr_frame.is_iframe is False
     assert rr_frame.is_uframe is False
@@ -365,6 +377,7 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
     rej_frame = parse_hdlc_frame(
         build_frame(encode_address(32), encode_address(1, 42), control=0xA9)
     )
+    assert rej_frame.frame_type == HdlcFrameTypes.SUPERVISORY
     assert rej_frame.is_sframe is True
     assert rej_frame.supervisory_type == HdlcSupervisoryTypes.REJECT
     assert rej_frame.recv_seq == 5
@@ -374,6 +387,7 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
     ua_frame = parse_hdlc_frame(
         build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     )
+    assert ua_frame.frame_type == HdlcFrameTypes.UNNUMBERED
     assert ua_frame.is_sframe is False
     assert ua_frame.is_uframe is True
     assert ua_frame.supervisory_type is None

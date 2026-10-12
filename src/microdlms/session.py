@@ -21,6 +21,7 @@ from microdlms.exceptions import ProtocolError
 from microdlms.hdlc import (
     HdlcControls,
     HdlcFrame,
+    HdlcFrameTypes,
     build_frame,
     encode_address,
     make_i_control,
@@ -306,12 +307,13 @@ class DlmsSession:
                 events.append(ProtocolErrorEvent(str(error)))
                 continue
 
-            if frame.is_iframe:
-                event = self._handle_iframe(frame)
-            elif frame.is_sframe:
-                event = self._handle_sframe(frame)
-            else:
-                event = self._handle_uframe(frame)
+            match frame.frame_type:
+                case HdlcFrameTypes.INFORMATION:
+                    event = self._handle_iframe(frame)
+                case HdlcFrameTypes.SUPERVISORY:
+                    event = self._handle_sframe(frame)
+                case HdlcFrameTypes.UNNUMBERED:
+                    event = self._handle_uframe(frame)
             events.append(event)
 
         return events

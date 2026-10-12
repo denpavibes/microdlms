@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Final
 
@@ -26,20 +26,23 @@ HDLC_FRAME_TYPE_3_PREFIX: Final = 0xA0
 HDLC_FRAME_TYPE_MASK: Final = 0xF0
 HDLC_FORMAT_TYPE_3: Final = 0x0A
 
-# HDLC control field frame format discriminators (bits 0-1)
+# HDLC control field frame format bit masks
 HDLC_CONTROL_I_FRAME_MASK: Final = 0x01
-HDLC_CONTROL_I_FRAME_VALUE: Final = 0x00
-
 HDLC_CONTROL_S_FRAME_MASK: Final = 0x03
-HDLC_CONTROL_S_FRAME_VALUE: Final = 0x01
-
 HDLC_CONTROL_U_FRAME_MASK: Final = 0x03
-HDLC_CONTROL_U_FRAME_VALUE: Final = 0x03
 
 # HDLC control field supervisory function (bits 2-3) and sequence numbers
 HDLC_SUPERVISORY_TYPE_MASK: Final = 0x0C
 HDLC_SEQUENCE_MASK: Final = 0x07
 HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
+
+
+class HdlcFrameTypes(IntEnum):
+    """HDLC control field frame formats matching wire discriminator values."""
+
+    INFORMATION = 0x00
+    SUPERVISORY = 0x01
+    UNNUMBERED = 0x03
 
 
 class HdlcSupervisoryTypes(IntEnum):
@@ -173,7 +176,7 @@ def make_i_control(send_seq: int, recv_seq: int, poll: bool = True) -> int:
 
 def _is_information_frame(control: int) -> bool:
     """True if control byte indicates an Information frame."""
-    return (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
+    return (control & HDLC_CONTROL_I_FRAME_MASK) == HdlcFrameTypes.INFORMATION
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,21 +192,32 @@ class HdlcFrame:
     hcs: bytes | None
     information: bytes | None
     fcs: bytes
+    frame_type: HdlcFrameTypes = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Determine and assign frame type based on control byte discriminator bits."""
+        if _is_information_frame(self.control):
+            frame_type = HdlcFrameTypes.INFORMATION
+        elif (self.control & HDLC_CONTROL_S_FRAME_MASK) == HdlcFrameTypes.SUPERVISORY:
+            frame_type = HdlcFrameTypes.SUPERVISORY
+        else:
+            frame_type = HdlcFrameTypes.UNNUMBERED
+        object.__setattr__(self, "frame_type", frame_type)
 
     @property
     def is_iframe(self) -> bool:
         """True if control byte indicates an Information frame."""
-        return _is_information_frame(self.control)
+        return self.frame_type == HdlcFrameTypes.INFORMATION
 
     @property
     def is_sframe(self) -> bool:
         """True if control byte indicates a Supervisory frame."""
-        return (self.control & HDLC_CONTROL_S_FRAME_MASK) == HDLC_CONTROL_S_FRAME_VALUE
+        return self.frame_type == HdlcFrameTypes.SUPERVISORY
 
     @property
     def is_uframe(self) -> bool:
         """True if control byte indicates an Unnumbered frame."""
-        return (self.control & HDLC_CONTROL_U_FRAME_MASK) == HDLC_CONTROL_U_FRAME_VALUE
+        return self.frame_type == HdlcFrameTypes.UNNUMBERED
 
     @property
     def supervisory_type(self) -> HdlcSupervisoryTypes | None:

@@ -15,7 +15,7 @@ from microdlms.exceptions import (
     MicrodlmsError,
     ProtocolError,
 )
-from microdlms.hdlc import HdlcControls, HdlcSupervisoryTypes
+from microdlms.hdlc import HdlcControls, HdlcFrameTypes, HdlcSupervisoryTypes
 from microdlms.obis import CosemAttribute, ObisCode
 from microdlms.session import DlmsSession, SessionState
 from microdlms.types import (
@@ -72,6 +72,7 @@ __all__ = [
     "AxdrTags",
     "ApduTags",
     "HdlcControls",
+    "HdlcFrameTypes",
     "HdlcSupervisoryTypes",
     "DEFAULT_CLIENT_LOGICAL_ADDRESS",
     "DEFAULT_SERVER_LOGICAL_ADDRESS",
