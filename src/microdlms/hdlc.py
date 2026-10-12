@@ -29,8 +29,18 @@ HDLC_FORMAT_TYPE_3: Final = 0x0A
 HDLC_CONTROL_FRAME_TYPE_MASK: Final = 0x01
 HDLC_CONTROL_S_FRAME_MASK: Final = 0x03
 HDLC_CONTROL_S_FRAME_VALUE: Final = 0x01
+HDLC_CONTROL_S_FRAME_TYPE_MASK: Final = 0x0C
 HDLC_SEQUENCE_MASK: Final = 0x07
 HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
+
+
+class HdlcSupervisoryTypes(IntEnum):
+    """HDLC supervisory (S-frame) type identifiers."""
+
+    RECEIVE_READY = 0x00
+    RECEIVE_NOT_READY = 0x04
+    REJECT = 0x08
+    SELECTIVE_REJECT = 0x0C
 
 
 class HdlcControls(IntEnum):
@@ -171,6 +181,23 @@ class HdlcFrame:
     def is_iframe(self) -> bool:
         """True if control byte indicates an Information frame."""
         return (self.control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
+
+    @property
+    def is_sframe(self) -> bool:
+        """True if control byte indicates a Supervisory frame."""
+        return (self.control & HDLC_CONTROL_S_FRAME_MASK) == HDLC_CONTROL_S_FRAME_VALUE
+
+    @property
+    def is_uframe(self) -> bool:
+        """True if control byte indicates an Unnumbered frame."""
+        return (self.control & HDLC_CONTROL_S_FRAME_MASK) == 0x03
+
+    @property
+    def supervisory_type(self) -> HdlcSupervisoryTypes | None:
+        """Type of Supervisory frame or None if not an S-frame."""
+        if self.is_sframe:
+            return HdlcSupervisoryTypes(self.control & HDLC_CONTROL_S_FRAME_TYPE_MASK)
+        return None
 
     @property
     def send_seq(self) -> int | None:

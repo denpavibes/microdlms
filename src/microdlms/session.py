@@ -281,6 +281,18 @@ class DlmsSession:
 
         return ProtocolErrorEvent(f"Unexpected HDLC control byte: 0x{control:02X}")
 
+    def _handle_sframe(self, frame: HdlcFrame) -> SessionEvent:
+        """Process incoming supervisory frame (RR, RNR, REJ), resyncing send sequence counter."""
+        if frame.recv_seq is not None:
+            self._send_seq = frame.recv_seq
+
+        supervisory_name = (
+            frame.supervisory_type.name if frame.supervisory_type is not None else "UNKNOWN"
+        )
+        return ProtocolErrorEvent(
+            f"Supervisory frame received: {supervisory_name} N(R)={frame.recv_seq}"
+        )
+
     def receive_bytes(self, data: bytes) -> list[SessionEvent]:
         """Ingest incoming raw serial bytes, decode HDLC frames, and yield resulting events."""
         self._inbound_buffer.extend(data)
@@ -294,7 +306,12 @@ class DlmsSession:
                 events.append(ProtocolErrorEvent(str(error)))
                 continue
 
-            event = self._handle_iframe(frame) if frame.is_iframe else self._handle_uframe(frame)
+            if frame.is_iframe:
+                event = self._handle_iframe(frame)
+            elif frame.is_sframe:
+                event = self._handle_sframe(frame)
+            else:
+                event = self._handle_uframe(frame)
             events.append(event)
 
         return events

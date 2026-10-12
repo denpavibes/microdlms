@@ -488,3 +488,26 @@ def test_session_error_handling() -> None:
     events = session.receive_bytes(spontaneous_ua)
     assert len(events) == 1
     assert isinstance(events[0], ConnectedEvent)
+
+
+def test_session_supervisory_frame_handling() -> None:
+    """Verify that incoming S-frames resynchronize send_seq counter and yield ProtocolErrorEvent."""
+    session = DlmsSession()
+    session._state = SessionState.ASSOCIATED
+    session._send_seq = 6
+
+    # 1. Meter sends RR with N(R)=2, Final=1 (control 0x51)
+    rr_frame = build_frame(encode_address(32), encode_address(1, 42), control=0x51)
+    events = session.receive_bytes(rr_frame)
+    assert len(events) == 1
+    assert isinstance(events[0], ProtocolErrorEvent)
+    assert "Supervisory frame received: RECEIVE_READY N(R)=2" in events[0].message
+    assert session.send_seq == 2
+
+    # 2. Meter sends REJ with N(R)=4, Final=1 (control (4 << 5) | 0x19 = 0x99)
+    rej_frame = build_frame(encode_address(32), encode_address(1, 42), control=0x99)
+    events = session.receive_bytes(rej_frame)
+    assert len(events) == 1
+    assert isinstance(events[0], ProtocolErrorEvent)
+    assert "Supervisory frame received: REJECT N(R)=4" in events[0].message
+    assert session.send_seq == 4

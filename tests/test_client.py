@@ -7,6 +7,7 @@ from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
+from serialx import SerialException
 
 from microdlms.client import AsyncMeterClient
 from microdlms.exceptions import (
@@ -735,3 +736,56 @@ async def test_client_get_stale_data_access_error_ignored(
 
     value = await client.get(attribute)
     assert value == "41920942"
+
+
+async def test_client_get_retry_recovers_from_supervisory_s_frame(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify that an S-frame RR from the meter triggers resync and retry succeeds."""
+    reader, writer = mock_serial_pair
+    client = AsyncMeterClient(port="COM1", timeout=1.0, retries=2, retry_delay=0.01)
+    client._writer = writer
+    client._reader = cast(asyncio.StreamReader, reader)
+    client._session._state = SessionState.ASSOCIATED
+
+    attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
+
+    # 1. Attempt 0: Meter sends S-frame RR with N(R)=1 (control 0x31)
+    rr_frame = build_frame(encode_address(32), encode_address(1, 42), control=0x31)
+    reader.feed_bytes(rr_frame)
+
+    # 2. Attempt 1: Meter sends valid response
+    response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+    response_frame = build_frame(
+        dest_address=encode_address(32),
+        src_address=encode_address(1, 42),
+        control=make_i_control(send_seq=1, recv_seq=2),
+        information=wrap_llc(response_apdu),
+    )
+    reader.feed_bytes(response_frame)
+
+    value = await client.get(attribute)
+    assert value == "41920942"
+    assert client.is_connected is True
+
+
+async def test_client_wait_for_event_serial_exception(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify that SerialException and OSError in reader are wrapped in CommunicationError."""
+    reader, writer = mock_serial_pair
+    client = AsyncMeterClient(port="COM1", timeout=1.0)
+    client._writer = writer
+    client._reader = cast(asyncio.StreamReader, reader)
+
+    with (
+        patch.object(reader, "read", side_effect=SerialException("Device disconnected")),
+        pytest.raises(CommunicationError, match="Serial communication error: Device disconnected"),
+    ):
+        await client._wait_for_event(GetResponseEvent)
+
+    with (
+        patch.object(reader, "read", side_effect=OSError("I/O error")),
+        pytest.raises(CommunicationError, match="Serial communication error: I/O error"),
+    ):
+        await client._wait_for_event(GetResponseEvent)

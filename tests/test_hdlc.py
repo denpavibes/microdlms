@@ -10,6 +10,7 @@ from microdlms.hdlc import (
     LLC_REQ_HEADER,
     LLC_RESP_HEADER,
     HdlcControls,
+    HdlcSupervisoryTypes,
     build_frame,
     calculate_crc16,
     check_crc16,
@@ -340,3 +341,39 @@ def test_hdlc_control_enum() -> None:
     assert HdlcControls.UA.value == 0x63
     assert HdlcControls.DM_FINAL.value == 0x1F
     assert HdlcControls.DM.value == 0x0F
+
+
+def test_hdlc_supervisory_types_and_frame_properties() -> None:
+    """Verify HdlcSupervisoryTypes enum members and S-frame properties on HdlcFrame."""
+    assert HdlcSupervisoryTypes.RECEIVE_READY.value == 0x00
+    assert HdlcSupervisoryTypes.RECEIVE_NOT_READY.value == 0x04
+    assert HdlcSupervisoryTypes.REJECT.value == 0x08
+    assert HdlcSupervisoryTypes.SELECTIVE_REJECT.value == 0x0C
+
+    # S-frame: RR with N(R)=2, Final=1 (control 0x51)
+    rr_frame = parse_hdlc_frame(
+        build_frame(encode_address(32), encode_address(1, 42), control=0x51)
+    )
+    assert rr_frame.is_sframe is True
+    assert rr_frame.is_iframe is False
+    assert rr_frame.is_uframe is False
+    assert rr_frame.supervisory_type == HdlcSupervisoryTypes.RECEIVE_READY
+    assert rr_frame.recv_seq == 2
+    assert rr_frame.poll_final is True
+
+    # S-frame: REJ with N(R)=5, Final=0 (control (5 << 5) | 0x09 = 0xA9)
+    rej_frame = parse_hdlc_frame(
+        build_frame(encode_address(32), encode_address(1, 42), control=0xA9)
+    )
+    assert rej_frame.is_sframe is True
+    assert rej_frame.supervisory_type == HdlcSupervisoryTypes.REJECT
+    assert rej_frame.recv_seq == 5
+    assert rej_frame.poll_final is False
+
+    # U-frame: UA_FINAL has supervisory_type None and is_uframe True
+    ua_frame = parse_hdlc_frame(
+        build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    )
+    assert ua_frame.is_sframe is False
+    assert ua_frame.is_uframe is True
+    assert ua_frame.supervisory_type is None

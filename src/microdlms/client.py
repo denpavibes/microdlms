@@ -8,6 +8,7 @@ from collections.abc import Callable
 from typing import Any, Final, Self
 
 import serialx
+from serialx import SerialException
 
 from microdlms.const import (
     DEFAULT_CLIENT_LOGICAL_ADDRESS,
@@ -293,6 +294,8 @@ class AsyncMeterClient:
             raise CommunicationError(
                 f"Timeout ({effective_timeout}s) waiting for meter response"
             ) from error
+        except (SerialException, OSError) as error:
+            raise CommunicationError(f"Serial communication error: {error}") from error
 
     async def __aenter__(self) -> Self:
         await self.connect()
