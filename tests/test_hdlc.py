@@ -10,6 +10,7 @@ from microdlms.hdlc import (
     LLC_REQ_HEADER,
     LLC_RESP_HEADER,
     HdlcControls,
+    HdlcFrame,
     HdlcFrameTypes,
     HdlcSupervisoryTypes,
     build_frame,
@@ -99,7 +100,8 @@ def test_build_and_parse_unnumbered_frame() -> None:
     assert parsed.src_address == source_address
     assert parsed.control == HdlcControls.SNRM
     assert parsed.frame_type == HdlcFrameTypes.UNNUMBERED
-    assert parsed.is_iframe is False
+    assert HdlcFrame.is_iframe(parsed.control) is False
+    assert HdlcFrame.is_uframe(parsed.control) is True
     assert parsed.hcs is None
     assert parsed.send_seq is None
     assert parsed.poll_final is True
@@ -111,7 +113,8 @@ def test_build_and_parse_unnumbered_frame() -> None:
     parsed_disc = parse_hdlc_frame(disc_frame)
     assert parsed_disc.control == HdlcControls.DISC
     assert parsed_disc.frame_type == HdlcFrameTypes.UNNUMBERED
-    assert parsed_disc.is_iframe is False
+    assert HdlcFrame.is_iframe(parsed_disc.control) is False
+    assert HdlcFrame.is_uframe(parsed_disc.control) is True
 
 
 def test_build_and_parse_iframe() -> None:
@@ -130,7 +133,9 @@ def test_build_and_parse_iframe() -> None:
 
     parsed = parse_hdlc_frame(frame_bytes)
     assert parsed.frame_type == HdlcFrameTypes.INFORMATION
-    assert parsed.is_iframe is True
+    assert HdlcFrame.is_iframe(parsed.control) is True
+    assert HdlcFrame.is_sframe(parsed.control) is False
+    assert HdlcFrame.is_uframe(parsed.control) is False
     assert parsed.send_seq == 2
     assert parsed.recv_seq == 3
     assert parsed.hcs is not None
@@ -249,7 +254,9 @@ def test_hdlc_frame_property_and_truncation_branches() -> None:
     parsed_receiver_ready = parse_hdlc_frame(
         build_frame(encode_address(32), encode_address(1, 42), 0x31)
     )
-    assert parsed_receiver_ready.is_iframe is False
+    assert parsed_receiver_ready.frame_type == HdlcFrameTypes.SUPERVISORY
+    assert HdlcFrame.is_iframe(parsed_receiver_ready.control) is False
+    assert HdlcFrame.is_sframe(parsed_receiver_ready.control) is True
     assert parsed_receiver_ready.recv_seq == 1
 
     # Frame truncated before control byte (dest + src take up all 4 bytes before FCS)
@@ -366,9 +373,9 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
         build_frame(encode_address(32), encode_address(1, 42), control=0x51)
     )
     assert rr_frame.frame_type == HdlcFrameTypes.SUPERVISORY
-    assert rr_frame.is_sframe is True
-    assert rr_frame.is_iframe is False
-    assert rr_frame.is_uframe is False
+    assert HdlcFrame.is_sframe(rr_frame.control) is True
+    assert HdlcFrame.is_iframe(rr_frame.control) is False
+    assert HdlcFrame.is_uframe(rr_frame.control) is False
     assert rr_frame.supervisory_type == HdlcSupervisoryTypes.RECEIVE_READY
     assert rr_frame.recv_seq == 2
     assert rr_frame.poll_final is True
@@ -378,7 +385,7 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
         build_frame(encode_address(32), encode_address(1, 42), control=0xA9)
     )
     assert rej_frame.frame_type == HdlcFrameTypes.SUPERVISORY
-    assert rej_frame.is_sframe is True
+    assert HdlcFrame.is_sframe(rej_frame.control) is True
     assert rej_frame.supervisory_type == HdlcSupervisoryTypes.REJECT
     assert rej_frame.recv_seq == 5
     assert rej_frame.poll_final is False
@@ -388,6 +395,6 @@ def test_hdlc_supervisory_types_and_frame_properties() -> None:
         build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
     )
     assert ua_frame.frame_type == HdlcFrameTypes.UNNUMBERED
-    assert ua_frame.is_sframe is False
-    assert ua_frame.is_uframe is True
+    assert HdlcFrame.is_uframe(ua_frame.control) is True
+    assert HdlcFrame.is_sframe(ua_frame.control) is False
     assert ua_frame.supervisory_type is None

@@ -174,11 +174,6 @@ def make_i_control(send_seq: int, recv_seq: int, poll: bool = True) -> int:
     )
 
 
-def _is_information_frame(control: int) -> bool:
-    """True if control byte indicates an Information frame."""
-    return (control & HDLC_CONTROL_I_FRAME_MASK) == HdlcFrameTypes.INFORMATION
-
-
 @dataclass(frozen=True, slots=True)
 class HdlcFrame:
     """Parsed HDLC frame structure."""
@@ -196,45 +191,34 @@ class HdlcFrame:
 
     def __post_init__(self) -> None:
         """Determine and assign frame type based on control byte discriminator bits."""
-        if _is_information_frame(self.control):
+        if HdlcFrame.is_iframe(self.control):
             frame_type = HdlcFrameTypes.INFORMATION
-        elif (self.control & HDLC_CONTROL_S_FRAME_MASK) == HdlcFrameTypes.SUPERVISORY:
+        elif HdlcFrame.is_sframe(self.control):
             frame_type = HdlcFrameTypes.SUPERVISORY
         else:
             frame_type = HdlcFrameTypes.UNNUMBERED
         object.__setattr__(self, "frame_type", frame_type)
 
     @property
-    def is_iframe(self) -> bool:
-        """True if control byte indicates an Information frame."""
-        return self.frame_type == HdlcFrameTypes.INFORMATION
-
-    @property
-    def is_sframe(self) -> bool:
-        """True if control byte indicates a Supervisory frame."""
-        return self.frame_type == HdlcFrameTypes.SUPERVISORY
-
-    @property
-    def is_uframe(self) -> bool:
-        """True if control byte indicates an Unnumbered frame."""
-        return self.frame_type == HdlcFrameTypes.UNNUMBERED
-
-    @property
     def supervisory_type(self) -> HdlcSupervisoryTypes | None:
         """Type of Supervisory frame or None if not an S-frame."""
-        if self.is_sframe:
+        if self.frame_type == HdlcFrameTypes.SUPERVISORY:
             return HdlcSupervisoryTypes(self.control & HDLC_SUPERVISORY_TYPE_MASK)
         return None
 
     @property
     def send_seq(self) -> int | None:
         """N(S) send sequence number for I-frames."""
-        return (self.control >> 1) & HDLC_SEQUENCE_MASK if self.is_iframe else None
+        return (
+            (self.control >> 1) & HDLC_SEQUENCE_MASK
+            if self.frame_type == HdlcFrameTypes.INFORMATION
+            else None
+        )
 
     @property
     def recv_seq(self) -> int | None:
         """N(R) receive sequence number for I-frames or S-frames."""
-        if self.is_iframe or self.is_sframe:
+        if self.frame_type in (HdlcFrameTypes.INFORMATION, HdlcFrameTypes.SUPERVISORY):
             return (self.control >> 5) & HDLC_SEQUENCE_MASK
         return None
 
@@ -242,6 +226,21 @@ class HdlcFrame:
     def poll_final(self) -> bool:
         """Value of Poll/Final bit."""
         return bool((self.control & HDLC_CONTROL_POLL_FINAL_BIT) != 0)
+
+    @staticmethod
+    def is_iframe(control: int) -> bool:
+        """True if control byte indicates an Information frame."""
+        return (control & HDLC_CONTROL_I_FRAME_MASK) == HdlcFrameTypes.INFORMATION
+
+    @staticmethod
+    def is_sframe(control: int) -> bool:
+        """True if control byte indicates a Supervisory frame."""
+        return (control & HDLC_CONTROL_S_FRAME_MASK) == HdlcFrameTypes.SUPERVISORY
+
+    @staticmethod
+    def is_uframe(control: int) -> bool:
+        """True if control byte indicates an Unnumbered frame."""
+        return (control & HDLC_CONTROL_U_FRAME_MASK) == HdlcFrameTypes.UNNUMBERED
 
 
 def build_frame(
@@ -253,7 +252,7 @@ def build_frame(
     """Build a complete HDLC frame including format, addresses, HCS (if I-frame), and FCS."""
     info_length = len(information) if information is not None else 0
 
-    if _is_information_frame(control):
+    if HdlcFrame.is_iframe(control):
         # Header length without format word = len(dest) + len(src) + 1 + 2 (hcs)
         # Total frame length between flags = header + info_length + 2 (fcs)
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + 2 + info_length + 2
@@ -325,7 +324,7 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
     offset += 1
 
     header_check_sequence: bytes | None = None
-    if _is_information_frame(control):
+    if HdlcFrame.is_iframe(control):
         header_with_hcs = content[: offset + 2]
         if not check_crc16(header_with_hcs):
             raise ProtocolError(f"HCS check failed on HDLC I-frame header: {header_with_hcs.hex()}")

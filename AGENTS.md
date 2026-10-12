@@ -39,7 +39,9 @@ This document outlines architecture principles, operational standards, hardware 
 ## 3. Git & Operational Conventions
 
 ### 3.1 Commit Guidelines
-- **Commit Message Prefix**: Always prefix agent-generated commits with `[ai]` (e.g., `[ai] Support multi-frame A-XDR structures.`).
+- **Commit Message Prefix**: Prefix commit messages to reflect authorship:
+  - `[ai]`: For autonomous agent-generated commits (e.g., `[ai] Support multi-frame A-XDR structures.`).
+  - `[human+ai]`: For collaborative commits pairing human and AI contributions.
 - **Commit Format**: Keep commit messages concise (under 50 characters including prefix) and end with a full stop (`.`).
 - **Branching**: Conduct feature and bugfix work on dedicated branches (`feature/<name>` or `fix/<name>`). Never commit experimental scaffolding directly to the main branch.
 
