@@ -53,8 +53,6 @@ class AsyncMeterClient:
         server_physical_address: int | None = None,
         timeout: float = DEFAULT_TIMEOUT,
         system_title: bytes | None = None,
-        retries: int = DEFAULT_RETRIES,
-        retry_delay: float = DEFAULT_RETRY_DELAY,
     ) -> None:
         self.port = port
         self.baudrate = baudrate
@@ -64,8 +62,6 @@ class AsyncMeterClient:
         self.server_physical_address = server_physical_address
         self.timeout = timeout
         self.system_title = system_title
-        self.retries = retries
-        self.retry_delay = retry_delay
 
         self._session = DlmsSession(
             client_logical_address=client_logical_address,
@@ -183,37 +179,35 @@ class AsyncMeterClient:
         error: CommunicationError,
         primary_error: Exception | None,
         attempt: int,
-        effective_retries: int,
+        retries: int,
     ) -> None:
         """Raise primary or current communication error if disconnected or out of retries."""
-        if not self.is_connected or attempt == effective_retries:
+        if not self.is_connected or attempt == retries:
             final_error = primary_error if primary_error is not None else error
             raise final_error from error
 
     async def get(
         self,
         attribute: CosemAttribute,
-        retries: int | None = None,
-        retry_delay: float | None = None,
+        retries: int = DEFAULT_RETRIES,
+        retry_delay: float = DEFAULT_RETRY_DELAY,
         timeout: float | None = None,
     ) -> Any:
         """Query a COSEM attribute from the meter and return its decoded Python value."""
         if not self.is_connected:
             raise CommunicationError("Client is not connected. Call connect() first.")
 
-        effective_retries = max(0, self.retries if retries is None else retries)
-        effective_delay = self.retry_delay if retry_delay is None else retry_delay
         primary_error: Exception | None = None
         pending_invoke_ids: set[int] = set()
 
-        for attempt in range(effective_retries + 1):
-            await self._prepare_next_retry(attempt, effective_delay)
+        for attempt in range(retries + 1):
+            await self._prepare_next_retry(attempt, retry_delay)
             try:
                 return await self._execute_get_attempt(attribute, pending_invoke_ids, timeout)
             except CommunicationError as error:
                 if primary_error is None:
                     primary_error = error
-                self._raise_get_error(error, primary_error, attempt, effective_retries)
+                self._raise_get_error(error, primary_error, attempt, retries)
 
     async def disconnect(self) -> None:
         """Gracefully release HDLC connection and close serial/socket transport."""

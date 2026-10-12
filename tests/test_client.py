@@ -344,11 +344,11 @@ async def test_client_reconnect_and_protocol_errors(
         "serialx.open_serial_connection",
         return_value=(reader_get_error, writer_get_error),
     ):
-        client_get_error = AsyncMeterClient(port="COM1", timeout=2.0, retries=0)
+        client_get_error = AsyncMeterClient(port="COM1", timeout=2.0)
         await client_get_error.connect()
         attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 1, 0, 0, 255), 2)
         with pytest.raises(CommunicationError, match="Protocol error during get"):
-            await client_get_error.get(attribute)
+            await client_get_error.get(attribute, retries=0)
 
     # 5. Unexpected event during get
     reader_unexpected, writer_unexpected = MockReader(), MockWriter()
@@ -479,7 +479,7 @@ async def test_client_get_retry_recovers_from_corrupted_frame(
     reader.feed_bytes(get_response_frame)
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
-        client = AsyncMeterClient(port="COM1", timeout=1.0, retries=2, retry_delay=0.01)
+        client = AsyncMeterClient(port="COM1", timeout=1.0)
         await client.connect()
         assert client.is_connected is True
 
@@ -488,7 +488,7 @@ async def test_client_get_retry_recovers_from_corrupted_frame(
             obis=ObisCode(0, 0, 96, 1, 0, 255),
             attribute=2,
         )
-        value = await client.get(attribute)
+        value = await client.get(attribute, retries=2, retry_delay=0.01)
         assert value == "41920942"
         # Connection remained alive and intact
         assert client.is_connected is True
@@ -527,13 +527,13 @@ async def test_client_get_retry_recovers_from_timeout(
         reader.feed_bytes(get_response_frame)
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
-        client = AsyncMeterClient(port="COM1", timeout=0.04, retries=2)
+        client = AsyncMeterClient(port="COM1", timeout=0.04)
         await client.connect()
 
         attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
         delayed_feed_task = asyncio.create_task(delayed_feed())
         try:
-            value = await client.get(attribute)
+            value = await client.get(attribute, retries=2)
             assert value == "41920942"
         finally:
             await delayed_feed_task
@@ -544,7 +544,7 @@ async def test_client_get_retries_aborted_if_disconnected(
 ) -> None:
     """Verify that retries are aborted immediately if session state is disconnected."""
     reader, writer = mock_serial_pair
-    client = AsyncMeterClient(port="COM1", timeout=1.0, retries=3)
+    client = AsyncMeterClient(port="COM1", timeout=1.0)
     client._writer = writer
     client._reader = cast(asyncio.StreamReader, reader)
     client._session._state = SessionState.ASSOCIATED
@@ -559,15 +559,15 @@ async def test_client_get_retries_aborted_if_disconnected(
         patch.object(client, "_wait_for_event", side_effect=fake_wait_fail),
         pytest.raises(CommunicationError, match="Disconnected mid-request"),
     ):
-        await client.get(attribute)
+        await client.get(attribute, retries=3)
 
 
-async def test_client_get_zero_retries_and_parameter_override(
+async def test_client_get_zero_retries_and_default_retries(
     mock_serial_pair: tuple[MockReader, MockWriter],
 ) -> None:
-    """Verify that setting retries=0 suppresses retries and fails on the first error."""
+    """Verify that setting retries=0 suppresses retries and default retries retries 3 times."""
     reader, writer = mock_serial_pair
-    client = AsyncMeterClient(port="COM1", timeout=1.0, retries=5)
+    client = AsyncMeterClient(port="COM1", timeout=1.0)
     client._writer = writer
     client._reader = cast(asyncio.StreamReader, reader)
     client._session._state = SessionState.ASSOCIATED
@@ -588,6 +588,15 @@ async def test_client_get_zero_retries_and_parameter_override(
         await client.get(attribute, retries=0)
 
     assert call_count == 1
+
+    call_count = 0
+    with (
+        patch.object(client, "_wait_for_event", side_effect=fake_wait),
+        pytest.raises(CommunicationError, match="Flaky read"),
+    ):
+        await client.get(attribute)
+
+    assert call_count == 4
 
 
 async def test_client_get_discards_stale_delayed_response_from_previous_get(
@@ -612,13 +621,13 @@ async def test_client_get_discards_stale_delayed_response_from_previous_get(
     )
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
-        client = AsyncMeterClient(port="COM1", timeout=0.03, retries=0)
+        client = AsyncMeterClient(port="COM1", timeout=0.03)
         await client.connect()
 
         attribute_a = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
         # Query A fails with timeout (no bytes fed)
         with pytest.raises(CommunicationError, match="Timeout"):
-            await client.get(attribute_a)
+            await client.get(attribute_a, retries=0)
 
         # Delayed response for Query A (invoke_id=0, serial number) arrives
         response_a_apdu = bytes.fromhex(
@@ -670,7 +679,7 @@ async def test_client_get_multiple_retries_mixed_errors_eventual_success(
     )
 
     with patch("serialx.open_serial_connection", return_value=(reader, writer)):
-        client = AsyncMeterClient(port="COM1", timeout=0.03, retries=2, retry_delay=0.01)
+        client = AsyncMeterClient(port="COM1", timeout=0.03)
         await client.connect()
 
         attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
@@ -694,7 +703,7 @@ async def test_client_get_multiple_retries_mixed_errors_eventual_success(
 
         delayed_feed_task = asyncio.create_task(feed_after_initial_timeout())
         try:
-            value = await client.get(attribute)
+            value = await client.get(attribute, retries=2, retry_delay=0.01)
             assert value == "41920942"
         finally:
             await delayed_feed_task
@@ -743,7 +752,7 @@ async def test_client_get_retry_recovers_from_supervisory_s_frame(
 ) -> None:
     """Verify that an S-frame RR from the meter triggers resync and retry succeeds."""
     reader, writer = mock_serial_pair
-    client = AsyncMeterClient(port="COM1", timeout=1.0, retries=2, retry_delay=0.01)
+    client = AsyncMeterClient(port="COM1", timeout=1.0)
     client._writer = writer
     client._reader = cast(asyncio.StreamReader, reader)
     client._session._state = SessionState.ASSOCIATED
@@ -764,7 +773,7 @@ async def test_client_get_retry_recovers_from_supervisory_s_frame(
     )
     reader.feed_bytes(response_frame)
 
-    value = await client.get(attribute)
+    value = await client.get(attribute, retries=2, retry_delay=0.01)
     assert value == "41920942"
     assert client.is_connected is True
 
