@@ -171,6 +171,11 @@ def make_i_control(send_seq: int, recv_seq: int, poll: bool = True) -> int:
     )
 
 
+def _is_information_frame(control: int) -> bool:
+    """True if control byte indicates an Information frame."""
+    return (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
+
+
 @dataclass(frozen=True, slots=True)
 class HdlcFrame:
     """Parsed HDLC frame structure."""
@@ -188,7 +193,7 @@ class HdlcFrame:
     @property
     def is_iframe(self) -> bool:
         """True if control byte indicates an Information frame."""
-        return (self.control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
+        return _is_information_frame(self.control)
 
     @property
     def is_sframe(self) -> bool:
@@ -232,10 +237,9 @@ def build_frame(
     information: bytes | None = None,
 ) -> bytes:
     """Build a complete HDLC frame including format, addresses, HCS (if I-frame), and FCS."""
-    is_information_frame = (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
     info_length = len(information) if information is not None else 0
 
-    if is_information_frame:
+    if _is_information_frame(control):
         # Header length without format word = len(dest) + len(src) + 1 + 2 (hcs)
         # Total frame length between flags = header + info_length + 2 (fcs)
         frame_length = 2 + len(dest_address) + len(src_address) + 1 + 2 + info_length + 2
@@ -305,10 +309,9 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
 
     control = content[offset]
     offset += 1
-    is_information_frame = (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
 
     header_check_sequence: bytes | None = None
-    if is_information_frame:
+    if _is_information_frame(control):
         header_with_hcs = content[: offset + 2]
         if not check_crc16(header_with_hcs):
             raise ProtocolError(f"HCS check failed on HDLC I-frame header: {header_with_hcs.hex()}")
