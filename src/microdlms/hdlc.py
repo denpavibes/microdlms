@@ -26,10 +26,18 @@ HDLC_FRAME_TYPE_3_PREFIX: Final = 0xA0
 HDLC_FRAME_TYPE_MASK: Final = 0xF0
 HDLC_FORMAT_TYPE_3: Final = 0x0A
 
-HDLC_CONTROL_FRAME_TYPE_MASK: Final = 0x01
+# HDLC control field frame format discriminators (bits 0-1)
+HDLC_CONTROL_I_FRAME_MASK: Final = 0x01
+HDLC_CONTROL_I_FRAME_VALUE: Final = 0x00
+
 HDLC_CONTROL_S_FRAME_MASK: Final = 0x03
 HDLC_CONTROL_S_FRAME_VALUE: Final = 0x01
-HDLC_CONTROL_S_FRAME_TYPE_MASK: Final = 0x0C
+
+HDLC_CONTROL_U_FRAME_MASK: Final = 0x03
+HDLC_CONTROL_U_FRAME_VALUE: Final = 0x03
+
+# HDLC control field supervisory function (bits 2-3) and sequence numbers
+HDLC_SUPERVISORY_TYPE_MASK: Final = 0x0C
 HDLC_SEQUENCE_MASK: Final = 0x07
 HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
 
@@ -180,7 +188,7 @@ class HdlcFrame:
     @property
     def is_iframe(self) -> bool:
         """True if control byte indicates an Information frame."""
-        return (self.control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
+        return (self.control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
 
     @property
     def is_sframe(self) -> bool:
@@ -190,13 +198,13 @@ class HdlcFrame:
     @property
     def is_uframe(self) -> bool:
         """True if control byte indicates an Unnumbered frame."""
-        return (self.control & HDLC_CONTROL_S_FRAME_MASK) == 0x03
+        return (self.control & HDLC_CONTROL_U_FRAME_MASK) == HDLC_CONTROL_U_FRAME_VALUE
 
     @property
     def supervisory_type(self) -> HdlcSupervisoryTypes | None:
         """Type of Supervisory frame or None if not an S-frame."""
         if self.is_sframe:
-            return HdlcSupervisoryTypes(self.control & HDLC_CONTROL_S_FRAME_TYPE_MASK)
+            return HdlcSupervisoryTypes(self.control & HDLC_SUPERVISORY_TYPE_MASK)
         return None
 
     @property
@@ -207,9 +215,7 @@ class HdlcFrame:
     @property
     def recv_seq(self) -> int | None:
         """N(R) receive sequence number for I-frames or S-frames."""
-        if self.is_iframe or (
-            (self.control & HDLC_CONTROL_S_FRAME_MASK) == HDLC_CONTROL_S_FRAME_VALUE
-        ):
+        if self.is_iframe or self.is_sframe:
             return (self.control >> 5) & HDLC_SEQUENCE_MASK
         return None
 
@@ -226,7 +232,7 @@ def build_frame(
     information: bytes | None = None,
 ) -> bytes:
     """Build a complete HDLC frame including format, addresses, HCS (if I-frame), and FCS."""
-    is_information_frame = (control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
+    is_information_frame = (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
     info_length = len(information) if information is not None else 0
 
     if is_information_frame:
@@ -299,7 +305,7 @@ def parse_hdlc_frame(frame: bytes) -> HdlcFrame:
 
     control = content[offset]
     offset += 1
-    is_information_frame = (control & HDLC_CONTROL_FRAME_TYPE_MASK) == 0
+    is_information_frame = (control & HDLC_CONTROL_I_FRAME_MASK) == HDLC_CONTROL_I_FRAME_VALUE
 
     header_check_sequence: bytes | None = None
     if is_information_frame:
