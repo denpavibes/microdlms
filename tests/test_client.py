@@ -789,3 +789,21 @@ async def test_client_wait_for_event_serial_exception(
         pytest.raises(CommunicationError, match="Serial communication error: I/O error"),
     ):
         await client._wait_for_event(GetResponseEvent)
+
+
+def test_package_version_and_fallback() -> None:
+    """Verify that __version__ is dynamically read from package metadata with fallback."""
+    import importlib
+    from importlib.metadata import PackageNotFoundError
+
+    import microdlms
+
+    assert microdlms.__version__ != "unknown"
+
+    with patch("importlib.metadata.version", side_effect=PackageNotFoundError):
+        importlib.reload(microdlms)
+        assert microdlms.__version__ == "unknown"
+
+    # Reload again to restore the actual version
+    importlib.reload(microdlms)
+    assert microdlms.__version__ != "unknown"

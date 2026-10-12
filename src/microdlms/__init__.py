@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
+
 from microdlms.apdu import ApduTags
 from microdlms.axdr import AxdrTags, decode_axdr
 from microdlms.client import AsyncMeterClient
@@ -34,7 +36,10 @@ from microdlms.types import (
     SessionEvent,
 )
 
-__version__ = "0.1.1"
+try:
+    __version__ = version("microdlms")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 __all__ = [
     "__version__",
