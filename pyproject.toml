@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "microdlms"
-version = "0.1.2"
+version = "0.1.3"
 description = "Lightweight, zero-core-dependency DLMS/COSEM meter client for Python 3.14+"
 readme = "README.md"
 license = "MIT"
