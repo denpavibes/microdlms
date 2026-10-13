@@ -1,5 +1,6 @@
 # microdlms
 
+[![PyPI - Version](https://img.shields.io/pypi/v/microdlms.svg)](https://pypi.org/project/microdlms/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
 [![Typing: Typed](https://img.shields.io/badge/typing-typed-green.svg)](https://peps.python.org/pep-0561/)
