@@ -6,6 +6,10 @@
 
 A lightweight, zero-core-dependency Python 3.14+ library for read-only DLMS/COSEM utility meter polling. Designed with a pure sans-I/O state machine architecture and a modern asynchronous client powered by [`serialx`](https://github.com/puddly/serialx).
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/denpavibes/microdlms/main/assets/header.svg" alt="A smart utility meter sending HDLC frames from its optical port to a microcontroller" width="100%">
+</p>
+
 ---
 
 ## Overview & Key Features
