@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Any, Final
 
 from microdlms.axdr import decode_axdr, encode_axdr_length
@@ -49,6 +49,7 @@ INVOKE_ID_MASK: Final = 0x0F
 PRIORITY_MASK: Final = 0xF0
 
 
+@unique
 class ApduTags(IntEnum):
     """DLMS/COSEM Application Protocol Data Unit (APDU) tags."""
 

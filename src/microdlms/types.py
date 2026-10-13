@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 from collections.abc import Sequence
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Any, Final, Self
 
 COSEM_DATE_TIME_LENGTH: Final = 12
@@ -17,6 +17,7 @@ MAX_HUNDREDTHS: Final = 100
 HUNDREDTHS_TO_MICROSECONDS: Final = 10000
 
 
+@unique
 class AssociationResult(IntEnum):
     """Result of DLMS association request (AARE result)."""
 
@@ -25,6 +26,7 @@ class AssociationResult(IntEnum):
     REJECTED_TRANSIENT = 2
 
 
+@unique
 class AssociationDiagnostic(IntEnum):
     """Diagnostic reasons for DLMS association rejection."""
 
@@ -44,6 +46,7 @@ class AssociationDiagnostic(IntEnum):
     AUTHENTICATION_REQUIRED = 14
 
 
+@unique
 class DataAccessResult(IntEnum):
     """Result error codes for DLMS Get/Set data access requests."""
 
@@ -65,6 +68,7 @@ class DataAccessResult(IntEnum):
     OTHER_REASON = 250
 
 
+@unique
 class InterfaceClass(IntEnum):
     """Standard DLMS/COSEM interface class identifiers."""
 

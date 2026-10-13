@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Final
 
 from microdlms.exceptions import ProtocolError
@@ -37,6 +37,7 @@ HDLC_SEQUENCE_MASK: Final = 0x07
 HDLC_CONTROL_POLL_FINAL_BIT: Final = 0x10
 
 
+@unique
 class HdlcFrameTypes(IntEnum):
     """HDLC control field frame formats matching wire discriminator values."""
 
@@ -45,6 +46,7 @@ class HdlcFrameTypes(IntEnum):
     UNNUMBERED = 0x03
 
 
+@unique
 class HdlcSupervisoryTypes(IntEnum):
     """HDLC supervisory (S-frame) type identifiers."""
 
@@ -54,6 +56,7 @@ class HdlcSupervisoryTypes(IntEnum):
     SELECTIVE_REJECT = 0x0C
 
 
+@unique
 class HdlcControls(IntEnum):
     """HDLC unnumbered frame control byte values."""
 

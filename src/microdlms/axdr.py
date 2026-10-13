@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Any, Final, NamedTuple
 
 from microdlms.exceptions import ProtocolError
@@ -12,6 +12,7 @@ AXDR_LENGTH_VALUE_MASK: Final = 0x7F
 BITS_PER_BYTE: Final = 8
 
 
+@unique
 class AxdrTags(IntEnum):
     """DLMS/COSEM A-XDR data type tags."""
 
