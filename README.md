@@ -41,33 +41,9 @@ A lightweight, zero-core-dependency Python 3.14+ library for read-only DLMS/COSE
 
 `microdlms` is structured in two distinct tiers:
 
-```text
-+--------------------------------------------------------------------------+
-|                       Optional Async I/O Layer                           |
-|                       AsyncMeterClient (serialx)                         |
-+--------------------------------------------------------------------------+
-                                    |
-                            (events / bytes)
-                                    v
-+--------------------------------------------------------------------------+
-|                       Tier 2: Sans-I/O Engine                            |
-|                       DlmsSession State Machine                          |
-+--------------------------------------------------------------------------+
-                                    |
-          +-------------------------+-------------------------+
-          |                                                   |
-          v                                                   v
-+-----------------------+                           +----------------------+
-|  HDLC Framing & CRCs  |                           |     APDU Codecs      |
-|  microdlms.hdlc       |                           |  microdlms.apdu      |
-+-----------------------+                           +----------------------+
-                                                              |
-                                                              v
-                                                    +----------------------+
-                                                    |  A-XDR Parser        |
-                                                    |  microdlms.axdr      |
-                                                    +----------------------+
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/denpavibes/microdlms/main/assets/architecture.svg" alt="microdlms architecture: AsyncMeterClient feeds bytes into the sans-I/O DlmsSession, which uses the HDLC, APDU and A-XDR codecs" width="760">
+</p>
 
 1. **Tier 1: Codecs & Framing**:
    - `microdlms.hdlc`: HDLC frame packaging, FCS/HCS CRC-16 calculations, LLC encapsulation (`0xE6, 0xE6, 0x00` / `0xE6, 0xE7, 0x00`), and sequence counters.

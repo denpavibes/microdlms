@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" role="img" aria-labelledby="title description">
+  <title id="title">microdlms architecture</title>
+  <desc id="description">AsyncMeterClient is an optional async I/O layer that feeds bytes into the sans-I/O DlmsSession state machine and receives events and outbound bytes back. DlmsSession uses the Tier 1 codecs: HDLC framing and CRCs, and APDU codecs, which rely on the A-XDR parser.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#8E95A5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+
+    <!-- Optional async I/O layer -->
+    <rect x="250" y="30" width="500" height="90" rx="20" fill="#F4F5F8" stroke="#FF6FAE" stroke-width="3"/>
+    <rect x="270" y="18" width="190" height="24" rx="12" fill="#FF6FAE"/>
+    <text x="365" y="34.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">OPTIONAL ASYNC I/O</text>
+    <text x="500" y="78" font-size="22" font-weight="700" fill="#3A3F4B" text-anchor="middle">AsyncMeterClient</text>
+    <text x="500" y="102" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#6B7180" text-anchor="middle">microdlms.client · serialx</text>
+
+    <!-- Client <-> session exchange -->
+    <g fill="none" stroke="#8E95A5" stroke-width="3" stroke-linecap="round">
+      <path d="M470 126 V192" marker-end="url(#arrow)"/>
+      <path d="M530 194 V128" marker-end="url(#arrow)"/>
+    </g>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#8E95A5">
+      <text x="456" y="164" text-anchor="end">receive_bytes()</text>
+      <text x="544" y="164">events · data_to_send()</text>
+    </g>
+
+    <!-- Tier 2: sans-I/O engine -->
+    <rect x="250" y="200" width="500" height="100" rx="20" fill="#F4F5F8" stroke="#2EC4B6" stroke-width="3"/>
+    <rect x="270" y="188" width="230" height="24" rx="12" fill="#2EC4B6"/>
+    <text x="385" y="204.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">TIER 2 · SANS-I/O ENGINE</text>
+    <text x="500" y="252" font-size="22" font-weight="700" fill="#3A3F4B" text-anchor="middle">DlmsSession</text>
+    <text x="500" y="278" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#6B7180" text-anchor="middle">state machine · microdlms.session</text>
+
+    <!-- Tier 1 group -->
+    <rect x="90" y="360" width="820" height="270" rx="24" fill="none" stroke="#B8BECB" stroke-width="2.5" stroke-dasharray="8 8"/>
+    <rect x="380" y="348" width="240" height="24" rx="12" fill="#8E95A5"/>
+    <text x="500" y="364.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">TIER 1 · CODECS &amp; FRAMING</text>
+
+    <!-- Session -> codecs -->
+    <g fill="none" stroke="#8E95A5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M500 306 V330"/>
+      <path d="M290 330 H710"/>
+      <path d="M290 330 V392" marker-end="url(#arrow)"/>
+      <path d="M710 330 V392" marker-end="url(#arrow)"/>
+      <path d="M710 496 V516" marker-end="url(#arrow)"/>
+    </g>
+    <circle cx="500" cy="330" r="5" fill="#8E95A5"/>
+
+    <!-- HDLC -->
+    <rect x="140" y="400" width="300" height="90" rx="18" fill="#F4F5F8" stroke="#8E95A5" stroke-width="3"/>
+    <text x="290" y="440" font-size="19" font-weight="700" fill="#3A3F4B" text-anchor="middle">HDLC Framing &amp; CRCs</text>
+    <text x="290" y="466" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#6B7180" text-anchor="middle">microdlms.hdlc</text>
+
+    <!-- APDU -->
+    <rect x="560" y="400" width="300" height="90" rx="18" fill="#F4F5F8" stroke="#8E95A5" stroke-width="3"/>
+    <text x="710" y="440" font-size="19" font-weight="700" fill="#3A3F4B" text-anchor="middle">APDU Codecs</text>
+    <text x="710" y="466" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#6B7180" text-anchor="middle">microdlms.apdu</text>
+
+    <!-- A-XDR -->
+    <rect x="560" y="524" width="300" height="80" rx="18" fill="#F4F5F8" stroke="#8E95A5" stroke-width="3"/>
+    <text x="710" y="560" font-size="19" font-weight="700" fill="#3A3F4B" text-anchor="middle">A-XDR Parser</text>
+    <text x="710" y="584" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#6B7180" text-anchor="middle">microdlms.axdr</text>
+  </g>
+
+  <!-- Small accents -->
+  <path d="M0 -10 Q0 0 10 0 Q0 0 0 10 Q0 0 -10 0 Q0 0 0 -10 Z" transform="translate(800 60) scale(0.9)" fill="#FF6FAE"/>
+  <path d="M0 -10 Q0 0 10 0 Q0 0 0 10 Q0 0 -10 0 Q0 0 0 -10 Z" transform="translate(200 250) scale(0.8)" fill="#2EC4B6"/>
+  <path d="M0 6 C -7 1 -8 -5 -4 -6 C -2 -6.5 0 -5 0 -3.5 C 0 -5 2 -6.5 4 -6 C 8 -5 7 1 0 6 Z" transform="translate(290 560) scale(2)" fill="none" stroke="#B8BECB" stroke-width="1.2"/>
+</svg>
