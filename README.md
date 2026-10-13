@@ -228,6 +228,9 @@ uv run ruff format --check
 # Strict static type checking
 uv run mypy src tests
 
+# Cognitive complexity checking
+uv run complexipy .
+
 # Spell checking
 uv run codespell
 ```
