@@ -246,14 +246,12 @@ class AsyncMeterClient:
         """Scan event queue for an expected event matching predicate or abort on disconnect."""
         index = 0
         while index < len(self._event_queue):
-            event = self._event_queue[index]
+            event = self._event_queue.pop(index)
             if isinstance(event, DisconnectedEvent) and DisconnectedEvent not in expected_types:
-                self._event_queue.pop(index)
                 raise CommunicationError("Connection disconnected by meter")
             if isinstance(event, expected_types):
                 if predicate is None or predicate(event):
-                    return self._event_queue.pop(index)
-                self._event_queue.pop(index)
+                    return event
                 continue
             index += 1
         return None
