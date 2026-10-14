@@ -19,7 +19,7 @@ A lightweight, zero-core-dependency Python 3.14+ library for read-only DLMS/COSE
 `microdlms` provides an independent, clean-room implementation of the read-only DLMS/COSEM communication stack (Green Book / Blue Book standards). It was created to power utility meter integrations (such as smart electricity meters over optical IR probes) with an open, OSI-compliant MIT license.
 
 - **Zero Core Dependencies (Sans-I/O)**: Core codecs, frame parsers, and session state machines use only the Python standard library.
-- **Asynchronous Client via `serialx`**: High-level async API (`AsyncMeterClient`) supporting physical serial ports (`/dev/ttyUSB0`, `COM3`) and network bridges / ESPHome `serial_proxy` (`socket://ip:port`).
+- **Asynchronous Client via `serialx`**: High-level async API (`AsyncMeterClient`) supporting physical serial ports (`/dev/ttyUSB0`, `COM3`) and network bridges (`socket://ip:port`) or ESPHome `serial_proxy` (with `pip install microdlms[esphome]`).
 - **Essential DLMS/COSEM Services**:
   - Logical Name (LN) referencing.
   - HDLC data-link connection (`SNRM` $\rightarrow$ `UA`) and disconnection (`DISC` $\rightarrow$ `UA`).

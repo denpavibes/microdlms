@@ -36,6 +36,9 @@ dev = [
     "codespell>=2.4",
     "complexipy>=8.0.1",
 ]
+esphome = [
+    "serialx[esphome]",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/microdlms"]
@@ -93,6 +96,7 @@ dev = [
     "mypy>=1.14",
     "codespell>=2.4",
     "complexipy>=8.0.1",
+    "serialx[esphome]",
 ]
 
 
