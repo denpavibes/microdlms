@@ -26,6 +26,8 @@ from microdlms.types import (
     ProtocolErrorEvent,
     ReleasedEvent,
     ScalerUnit,
+    UnitOfMeasurement,
+    UnitsOfMeasurement,
 )
 
 
@@ -83,13 +85,37 @@ def test_cosem_attribute() -> None:
     assert descriptor_bytes[8] == 2
 
 
+def test_unit_of_measurement() -> None:
+    """Test UnitOfMeasurement symbol lookup, string formatting, and unknown code fallback."""
+    volt_unit = UnitOfMeasurement(code=35)
+    assert volt_unit.code == 35
+    assert volt_unit.symbol == UnitsOfMeasurement.VOLT
+    assert str(volt_unit) == "V"
+
+    ampere_unit = UnitOfMeasurement(code=33)
+    assert ampere_unit.code == 33
+    assert ampere_unit.symbol == UnitsOfMeasurement.AMPERE
+    assert str(ampere_unit) == "A"
+
+    # Unknown code falls back to NONE
+    unknown_unit = UnitOfMeasurement(code=999)
+    assert unknown_unit.code == 999
+    assert unknown_unit.symbol == UnitsOfMeasurement.NONE
+    assert str(unknown_unit) == ""
+
+
 def test_scaler_unit() -> None:
     """Test ScalerUnit calculation and construction from A-XDR structure."""
-    scaler_unit = ScalerUnit(scaler=-2, unit=35)
+    volt_unit = UnitOfMeasurement(code=35)
+    scaler_unit = ScalerUnit(scaler=-2, unit=volt_unit)
     assert pytest.approx(scaler_unit.scale(21967), rel=1e-5) == 219.67
+    assert scaler_unit.unit == volt_unit
+    assert str(scaler_unit.unit) == "V"
 
-    scaler_unit_cubic_meters = ScalerUnit(scaler=-3, unit=33)
-    assert pytest.approx(scaler_unit_cubic_meters.scale(2065), rel=1e-5) == 2.065
+    ampere_unit = UnitOfMeasurement(code=33)
+    scaler_unit_ampere = ScalerUnit(scaler=-3, unit=ampere_unit)
+    assert pytest.approx(scaler_unit_ampere.scale(2065), rel=1e-5) == 2.065
+    assert str(scaler_unit_ampere.unit) == "A"
 
     # from_structure
     scaler_unit_from_structure = ScalerUnit.from_structure([-2, 35])

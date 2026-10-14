@@ -34,6 +34,8 @@ from microdlms.types import (
     ReleasedEvent,
     ScalerUnit,
     SessionEvent,
+    UnitOfMeasurement,
+    UnitsOfMeasurement,
 )
 
 try:
@@ -50,6 +52,8 @@ __all__ = [
     "CosemAttribute",
     "InterfaceClass",
     "ScalerUnit",
+    "UnitOfMeasurement",
+    "UnitsOfMeasurement",
     "CosemDateTime",
     "AssociationResult",
     "AssociationDiagnostic",

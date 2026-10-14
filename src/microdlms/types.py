@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Sequence
-from dataclasses import dataclass
-from enum import IntEnum, unique
+from dataclasses import dataclass, field
+from enum import IntEnum, StrEnum, unique
 from typing import Any, Final, Self
 
 COSEM_DATE_TIME_LENGTH: Final = 12
@@ -101,19 +101,166 @@ class InterfaceClass(IntEnum):
     MBUS_CLIENT = 72
 
 
+class UnitsOfMeasurement(StrEnum):
+    """Units of measurement symbols."""
+
+    NONE = ""
+    YEAR = "a"
+    MONTH = "mo"
+    WEEK = "wk"
+    DAY = "d"
+    HOUR = "h"
+    MINUTE = "min"
+    SECOND = "s"
+    DEGREE = "°"
+    DEGREE_CELSIUS = "°C"
+    CURRENCY = "currency"
+    METRE = "m"
+    METRE_PER_SECOND = "m/s"
+    CUBIC_METRE = "m³"
+    CUBIC_METRE_PER_HOUR = "m³/h"
+    CUBIC_METRE_PER_DAY = "m³/d"
+    LITRE = "l"
+    KILOGRAM = "kg"
+    NEWTON = "N"
+    NEWTON_METRE = "Nm"
+    PASCAL = "Pa"
+    BAR = "bar"
+    JOULE = "J"
+    JOULE_PER_HOUR = "J/h"
+    WATT = "W"
+    VOLT_AMPERE = "VA"
+    VAR = "var"
+    WATT_HOUR = "Wh"
+    VOLT_AMPERE_HOUR = "VAh"
+    VAR_HOUR = "varh"
+    AMPERE = "A"
+    COULOMB = "C"
+    VOLT = "V"
+    VOLT_PER_METRE = "V/m"
+    FARAD = "F"
+    OHM = "Ω"
+    OHM_METRE = "Ω·m"
+    WEBER = "Wb"
+    TESLA = "T"
+    HENRY = "H"
+    SIEMENS = "S"
+    KELVIN = "K"
+    RECIPROCAL_OF_VOLT = "1/V"
+    RECIPROCAL_OF_AMPERE = "1/A"
+    RECIPROCAL_OF_CUBIC_METRE = "1/m³"
+    PERCENT = "%"
+    AMPERE_HOUR = "Ah"
+    WATT_HOUR_PER_CUBIC_METRE = "Wh/m³"
+    JOULE_PER_CUBIC_METRE = "J/m³"
+    MOLE_PERCENT = "mol %"
+    GRAM_PER_CUBIC_METRE = "g/m³"
+    PASCAL_SECOND = "Pa·s"
+    JOULE_PER_KILOGRAM = "J/kg"
+    DECIBEL_MILLIWATT = "dBm"
+    DECIBEL_MICROVOLT = "dB·µV"
+    DECIBEL = "dB"
+    OTHER = "other"
+    COUNT = "count"
+
+
+DLMS_UNITS: dict[int, UnitsOfMeasurement] = {
+    0: UnitsOfMeasurement.NONE,
+    1: UnitsOfMeasurement.YEAR,
+    2: UnitsOfMeasurement.MONTH,
+    3: UnitsOfMeasurement.WEEK,
+    4: UnitsOfMeasurement.DAY,
+    5: UnitsOfMeasurement.HOUR,
+    6: UnitsOfMeasurement.MINUTE,
+    7: UnitsOfMeasurement.SECOND,
+    8: UnitsOfMeasurement.DEGREE,
+    9: UnitsOfMeasurement.DEGREE_CELSIUS,
+    10: UnitsOfMeasurement.CURRENCY,
+    11: UnitsOfMeasurement.METRE,
+    12: UnitsOfMeasurement.METRE_PER_SECOND,
+    13: UnitsOfMeasurement.CUBIC_METRE,
+    14: UnitsOfMeasurement.CUBIC_METRE,
+    15: UnitsOfMeasurement.CUBIC_METRE_PER_HOUR,
+    16: UnitsOfMeasurement.CUBIC_METRE_PER_HOUR,
+    17: UnitsOfMeasurement.CUBIC_METRE_PER_DAY,
+    18: UnitsOfMeasurement.CUBIC_METRE_PER_DAY,
+    19: UnitsOfMeasurement.LITRE,
+    20: UnitsOfMeasurement.KILOGRAM,
+    21: UnitsOfMeasurement.NEWTON,
+    22: UnitsOfMeasurement.NEWTON_METRE,
+    23: UnitsOfMeasurement.PASCAL,
+    24: UnitsOfMeasurement.BAR,
+    25: UnitsOfMeasurement.JOULE,
+    26: UnitsOfMeasurement.JOULE_PER_HOUR,
+    27: UnitsOfMeasurement.WATT,
+    28: UnitsOfMeasurement.VOLT_AMPERE,
+    29: UnitsOfMeasurement.VAR,
+    30: UnitsOfMeasurement.WATT_HOUR,
+    31: UnitsOfMeasurement.VOLT_AMPERE_HOUR,
+    32: UnitsOfMeasurement.VAR_HOUR,
+    33: UnitsOfMeasurement.AMPERE,
+    34: UnitsOfMeasurement.COULOMB,
+    35: UnitsOfMeasurement.VOLT,
+    36: UnitsOfMeasurement.VOLT_PER_METRE,
+    37: UnitsOfMeasurement.FARAD,
+    38: UnitsOfMeasurement.OHM,
+    39: UnitsOfMeasurement.OHM_METRE,
+    40: UnitsOfMeasurement.WEBER,
+    41: UnitsOfMeasurement.TESLA,
+    42: UnitsOfMeasurement.HENRY,
+    43: UnitsOfMeasurement.SIEMENS,
+    44: UnitsOfMeasurement.KELVIN,
+    45: UnitsOfMeasurement.RECIPROCAL_OF_VOLT,
+    46: UnitsOfMeasurement.RECIPROCAL_OF_AMPERE,
+    47: UnitsOfMeasurement.RECIPROCAL_OF_CUBIC_METRE,
+    48: UnitsOfMeasurement.PERCENT,
+    49: UnitsOfMeasurement.AMPERE_HOUR,
+    50: UnitsOfMeasurement.WATT_HOUR_PER_CUBIC_METRE,
+    51: UnitsOfMeasurement.JOULE_PER_CUBIC_METRE,
+    52: UnitsOfMeasurement.MOLE_PERCENT,
+    53: UnitsOfMeasurement.GRAM_PER_CUBIC_METRE,
+    54: UnitsOfMeasurement.PASCAL_SECOND,
+    55: UnitsOfMeasurement.JOULE_PER_KILOGRAM,
+    56: UnitsOfMeasurement.DECIBEL_MILLIWATT,
+    57: UnitsOfMeasurement.DECIBEL_MICROVOLT,
+    58: UnitsOfMeasurement.DECIBEL,
+    253: UnitsOfMeasurement.OTHER,
+    254: UnitsOfMeasurement.COUNT,
+    255: UnitsOfMeasurement.NONE,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class UnitOfMeasurement:
+    """Represents a unit of measurement."""
+
+    code: int
+    symbol: UnitsOfMeasurement = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Determine and assign unit of measurement symbol."""
+        symbol = DLMS_UNITS.get(self.code, UnitsOfMeasurement.NONE)
+        object.__setattr__(self, "symbol", symbol)
+
+    def __str__(self) -> str:
+        """Return a unit of measurement symbol."""
+        return self.symbol.value
+
+
 @dataclass(frozen=True, slots=True)
 class ScalerUnit:
     """COSEM scaler and unit pair representing measurement scale and engineering unit."""
 
     scaler: int
-    unit: int
+    unit: UnitOfMeasurement
 
     @classmethod
     def from_structure(cls, data: Sequence[Any]) -> Self:
         """Construct ScalerUnit from an A-XDR decoded structure [scaler, unit]."""
         if len(data) != 2:
             raise ValueError(f"Expected 2 elements for scaler_unit structure, got {len(data)}")
-        return cls(scaler=int(data[0]), unit=int(data[1]))
+
+        return cls(scaler=int(data[0]), unit=UnitOfMeasurement(int(data[1])))
 
     def scale(self, value: int | float) -> float:
         """Apply scaler factor to convert raw integer to scaled measurement value."""
