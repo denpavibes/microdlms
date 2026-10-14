@@ -235,16 +235,16 @@ class UnitOfMeasurement:
     """Represents a unit of measurement."""
 
     code: int
-    symbol: UnitsOfMeasurement = field(init=False)
+    unit: UnitsOfMeasurement = field(init=False)
 
     def __post_init__(self) -> None:
         """Determine and assign unit of measurement symbol."""
-        symbol = DLMS_UNITS.get(self.code, UnitsOfMeasurement.NONE)
-        object.__setattr__(self, "symbol", symbol)
+        unit = DLMS_UNITS.get(self.code, UnitsOfMeasurement.NONE)
+        object.__setattr__(self, "unit", unit)
 
     def __str__(self) -> str:
         """Return a unit of measurement symbol."""
-        return self.symbol.value
+        return self.unit.value
 
 
 @dataclass(frozen=True, slots=True)
@@ -252,7 +252,7 @@ class ScalerUnit:
     """COSEM scaler and unit pair representing measurement scale and engineering unit."""
 
     scaler: int
-    unit: UnitOfMeasurement
+    unit_of_measurement: UnitOfMeasurement
 
     @classmethod
     def from_structure(cls, data: Sequence[Any]) -> Self:
@@ -260,7 +260,7 @@ class ScalerUnit:
         if len(data) != 2:
             raise ValueError(f"Expected 2 elements for scaler_unit structure, got {len(data)}")
 
-        return cls(scaler=int(data[0]), unit=UnitOfMeasurement(int(data[1])))
+        return cls(scaler=int(data[0]), unit_of_measurement=UnitOfMeasurement(int(data[1])))
 
     def scale(self, value: int | float) -> float:
         """Apply scaler factor to convert raw integer to scaled measurement value."""

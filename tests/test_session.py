@@ -89,33 +89,33 @@ def test_unit_of_measurement() -> None:
     """Test UnitOfMeasurement symbol lookup, string formatting, and unknown code fallback."""
     volt_unit = UnitOfMeasurement(code=35)
     assert volt_unit.code == 35
-    assert volt_unit.symbol == UnitsOfMeasurement.VOLT
+    assert volt_unit.unit == UnitsOfMeasurement.VOLT
     assert str(volt_unit) == "V"
 
     ampere_unit = UnitOfMeasurement(code=33)
     assert ampere_unit.code == 33
-    assert ampere_unit.symbol == UnitsOfMeasurement.AMPERE
+    assert ampere_unit.unit == UnitsOfMeasurement.AMPERE
     assert str(ampere_unit) == "A"
 
     # Unknown code falls back to NONE
     unknown_unit = UnitOfMeasurement(code=999)
     assert unknown_unit.code == 999
-    assert unknown_unit.symbol == UnitsOfMeasurement.NONE
+    assert unknown_unit.unit == UnitsOfMeasurement.NONE
     assert str(unknown_unit) == ""
 
 
 def test_scaler_unit() -> None:
     """Test ScalerUnit calculation and construction from A-XDR structure."""
     volt_unit = UnitOfMeasurement(code=35)
-    scaler_unit = ScalerUnit(scaler=-2, unit=volt_unit)
+    scaler_unit = ScalerUnit(scaler=-2, unit_of_measurement=volt_unit)
     assert pytest.approx(scaler_unit.scale(21967), rel=1e-5) == 219.67
-    assert scaler_unit.unit == volt_unit
-    assert str(scaler_unit.unit) == "V"
+    assert scaler_unit.unit_of_measurement == volt_unit
+    assert str(scaler_unit.unit_of_measurement) == "V"
 
     ampere_unit = UnitOfMeasurement(code=33)
-    scaler_unit_ampere = ScalerUnit(scaler=-3, unit=ampere_unit)
+    scaler_unit_ampere = ScalerUnit(scaler=-3, unit_of_measurement=ampere_unit)
     assert pytest.approx(scaler_unit_ampere.scale(2065), rel=1e-5) == 2.065
-    assert str(scaler_unit_ampere.unit) == "A"
+    assert str(scaler_unit_ampere.unit_of_measurement) == "A"
 
     # from_structure
     scaler_unit_from_structure = ScalerUnit.from_structure([-2, 35])

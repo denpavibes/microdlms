@@ -123,7 +123,7 @@ async def main() -> None:
             attribute=2,
         )
         raw_voltage = await client.get(voltage_attribute)
-        print(f"Voltage: {scaler_unit.scale(raw_voltage)} {scaler_unit.unit}")
+        print(f"Voltage: {scaler_unit.scale(raw_voltage)} {scaler_unit.unit_of_measurement}")
 
 
 if __name__ == "__main__":
