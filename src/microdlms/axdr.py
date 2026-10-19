@@ -34,23 +34,23 @@ class AxdrTags(IntEnum):
     ENUM = 0x16
 
 
-class TagSpec(NamedTuple):
-    """Represents a tag specification."""
+class TypeSpec(NamedTuple):
+    """Represents a type specification."""
 
-    byte_length: int
+    byte_count: int
     is_signed: bool
 
 
-_INTEGER_TAG_SPECS: dict[int, TagSpec] = {
-    AxdrTags.DOUBLE_LONG: TagSpec(byte_length=4, is_signed=True),
-    AxdrTags.DOUBLE_LONG_UNSIGNED: TagSpec(byte_length=4, is_signed=False),
-    AxdrTags.INTEGER: TagSpec(byte_length=1, is_signed=True),
-    AxdrTags.LONG: TagSpec(byte_length=2, is_signed=True),
-    AxdrTags.UNSIGNED: TagSpec(byte_length=1, is_signed=False),
-    AxdrTags.LONG_UNSIGNED: TagSpec(byte_length=2, is_signed=False),
-    AxdrTags.LONG64: TagSpec(byte_length=8, is_signed=True),
-    AxdrTags.LONG64_UNSIGNED: TagSpec(byte_length=8, is_signed=False),
-    AxdrTags.ENUM: TagSpec(byte_length=1, is_signed=False),
+INTEGER_TYPES: dict[int, TypeSpec] = {
+    AxdrTags.DOUBLE_LONG: TypeSpec(byte_count=4, is_signed=True),
+    AxdrTags.DOUBLE_LONG_UNSIGNED: TypeSpec(byte_count=4, is_signed=False),
+    AxdrTags.INTEGER: TypeSpec(byte_count=1, is_signed=True),
+    AxdrTags.LONG: TypeSpec(byte_count=2, is_signed=True),
+    AxdrTags.UNSIGNED: TypeSpec(byte_count=1, is_signed=False),
+    AxdrTags.LONG_UNSIGNED: TypeSpec(byte_count=2, is_signed=False),
+    AxdrTags.LONG64: TypeSpec(byte_count=8, is_signed=True),
+    AxdrTags.LONG64_UNSIGNED: TypeSpec(byte_count=8, is_signed=False),
+    AxdrTags.ENUM: TypeSpec(byte_count=1, is_signed=False),
 }
 
 
@@ -106,35 +106,32 @@ class AxdrReader:
     def decode_value(self) -> Any:
         """Decode the next typed value from the buffer."""
         tag = self.read_byte()
+        match tag:
+            case AxdrTags.NULL_DATA:
+                return None
+            case AxdrTags.ARRAY | AxdrTags.STRUCTURE:
+                count = self.read_length()
+                return [self.decode_value() for _ in range(count)]
+            case AxdrTags.BOOLEAN:
+                return self.read_byte() != 0
+            case AxdrTags.BIT_STRING:
+                bit_count = self.read_length()
+                byte_count = (bit_count + BITS_PER_BYTE - 1) // BITS_PER_BYTE
+                return self.read_bytes(byte_count)
+            case AxdrTags.OCTET_STRING | AxdrTags.VISIBLE_STRING:
+                length = self.read_length()
+                raw = self.read_bytes(length)
+                if tag == AxdrTags.OCTET_STRING:
+                    return raw
 
-        if tag == AxdrTags.NULL_DATA:
-            return None
-
-        if tag in (AxdrTags.ARRAY, AxdrTags.STRUCTURE):
-            count = self.read_length()
-            return [self.decode_value() for _ in range(count)]
-
-        if tag == AxdrTags.BOOLEAN:
-            return self.read_byte() != 0
-
-        if tag == AxdrTags.BIT_STRING:
-            bit_count = self.read_length()
-            byte_count = (bit_count + BITS_PER_BYTE - 1) // BITS_PER_BYTE
-            return self.read_bytes(byte_count)
-
-        if tag in (AxdrTags.OCTET_STRING, AxdrTags.VISIBLE_STRING):
-            length = self.read_length()
-            raw = self.read_bytes(length)
-            return raw.decode("utf-8", errors="replace") if tag == AxdrTags.VISIBLE_STRING else raw
-
-        int_spec = _INTEGER_TAG_SPECS.get(tag)
-        if int_spec is not None:
-            byte_length, is_signed = int_spec
-            return int.from_bytes(self.read_bytes(byte_length), "big", signed=is_signed)
-
-        raise ProtocolError(
-            f"Unsupported or unknown A-XDR tag 0x{tag:02X} at offset {self._position - 1}"
-        )
+                return raw.decode("utf-8", errors="replace")
+            case _ if tag in INTEGER_TYPES:
+                byte_count, is_signed = INTEGER_TYPES[tag]
+                return int.from_bytes(self.read_bytes(byte_count), "big", signed=is_signed)
+            case _:
+                raise ProtocolError(
+                    f"Unsupported or unknown A-XDR tag 0x{tag:02X} at offset {self._position - 1}"
+                )
 
 
 def decode_axdr(data: bytes) -> Any:

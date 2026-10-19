@@ -8,6 +8,7 @@ from functools import cached_property
 from typing import Final
 
 from microdlms.apdu import (
+    RELEASE_REASON_NORMAL,
     ApduTags,
     decode_aare,
     decode_get_response_normal,
@@ -170,7 +171,7 @@ class DlmsSession:
         self._outbound_buffer.extend(frame)
         return current_invoke_id
 
-    def initiate_release(self, reason: int = 0) -> None:
+    def initiate_release(self, reason: int = RELEASE_REASON_NORMAL) -> None:
         """Prepare an ACSE Release Request (RLRQ) frame."""
         rlrq_apdu = encode_rlrq(reason=reason)
         info = wrap_llc(rlrq_apdu)
