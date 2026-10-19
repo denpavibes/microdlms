@@ -66,6 +66,8 @@ class HdlcControls(IntEnum):
     UA = 0x63
     DM_FINAL = 0x1F
     DM = 0x0F
+    FRMR_FINAL = 0x97
+    FRMR = 0x87
 
 
 # Precomputed CRC-16-CCITT / X.25 lookup table (polynomial 0x8408 reversed)

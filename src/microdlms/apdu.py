@@ -61,6 +61,24 @@ class ApduTags(IntEnum):
     GET_RESPONSE = 0xC4
 
 
+def _encode_ber_tlv(tag: int, value: bytes) -> bytes:
+    """Encode a BER TLV element with tag, A-XDR/BER length, and value bytes."""
+    return bytes([tag]) + encode_axdr_length(len(value)) + value
+
+
+AARQ_APPLICATION_CONTEXT: Final = _encode_ber_tlv(
+    BER_TAG_AARQ_APP_CONTEXT, APP_CONTEXT_LN_NO_CIPHER
+)
+AARQ_ACSE_REQUIREMENTS: Final = (
+    bytes([BER_TAG_AARQ_ACSE_REQUIREMENTS]) + ACSE_REQUIREMENTS_AUTHENTICATION
+)
+AARQ_MECHANISM_NAME_LLS: Final = _encode_ber_tlv(BER_TAG_AARQ_MECHANISM_NAME, MECHANISM_NAME_LLS)
+AARQ_USER_INFORMATION: Final = _encode_ber_tlv(
+    BER_TAG_AARQ_USER_INFORMATION,
+    _encode_ber_tlv(BER_TAG_OCTET_STRING, DEFAULT_INITIATE_REQUEST),
+)
+
+
 def encode_aarq(
     password: str | bytes | None = None,
     system_title: bytes | None = None,
@@ -73,50 +91,24 @@ def encode_aarq(
             f"got {len(effective_system_title)}"
         )
 
-    parts: list[bytes] = []
+    buffer = bytearray(AARQ_APPLICATION_CONTEXT)
 
-    parts.append(
-        bytes([BER_TAG_AARQ_APP_CONTEXT, len(APP_CONTEXT_LN_NO_CIPHER)]) + APP_CONTEXT_LN_NO_CIPHER
-    )
-
-    calling_ap_title_field = (
-        bytes([BER_TAG_OCTET_STRING, len(effective_system_title)]) + effective_system_title
-    )
-    parts.append(
-        bytes([BER_TAG_AARQ_CALLING_AP_TITLE, len(calling_ap_title_field)]) + calling_ap_title_field
-    )
+    calling_ap_title = _encode_ber_tlv(BER_TAG_OCTET_STRING, effective_system_title)
+    buffer.extend(_encode_ber_tlv(BER_TAG_AARQ_CALLING_AP_TITLE, calling_ap_title))
 
     if password is not None:
         password_bytes = password.encode("utf-8") if isinstance(password, str) else password
         if len(password_bytes) > 0:
-            parts.append(bytes([BER_TAG_AARQ_ACSE_REQUIREMENTS]) + ACSE_REQUIREMENTS_AUTHENTICATION)
-            parts.append(
-                bytes([BER_TAG_AARQ_MECHANISM_NAME, len(MECHANISM_NAME_LLS)]) + MECHANISM_NAME_LLS
+            buffer.extend(AARQ_ACSE_REQUIREMENTS)
+            buffer.extend(AARQ_MECHANISM_NAME_LLS)
+            auth_value = _encode_ber_tlv(
+                BER_TAG_AARQ_AUTHENTICATION_VALUE_PRIMITIVE, password_bytes
             )
-            value_field = (
-                bytes([BER_TAG_AARQ_AUTHENTICATION_VALUE_PRIMITIVE])
-                + encode_axdr_length(len(password_bytes))
-                + password_bytes
-            )
-            parts.append(
-                bytes([BER_TAG_AARQ_AUTHENTICATION_VALUE])
-                + encode_axdr_length(len(value_field))
-                + value_field
-            )
+            buffer.extend(_encode_ber_tlv(BER_TAG_AARQ_AUTHENTICATION_VALUE, auth_value))
 
-    user_information = (
-        bytes([BER_TAG_OCTET_STRING])
-        + encode_axdr_length(len(DEFAULT_INITIATE_REQUEST))
-        + DEFAULT_INITIATE_REQUEST
-    )
-    parts.append(
-        bytes([BER_TAG_AARQ_USER_INFORMATION])
-        + encode_axdr_length(len(user_information))
-        + user_information
-    )
+    buffer.extend(AARQ_USER_INFORMATION)
 
-    body = b"".join(parts)
-    return bytes([ApduTags.AARQ]) + encode_axdr_length(len(body)) + body
+    return _encode_ber_tlv(ApduTags.AARQ, bytes(buffer))
 
 
 def _read_ber_tlv(data: bytes, position: int) -> tuple[int, bytes, int] | None:

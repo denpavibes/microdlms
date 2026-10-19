@@ -277,7 +277,13 @@ class DlmsSession:
                 return DisconnectedEvent()
             return ConnectedEvent()
 
-        if control in (HdlcControls.DM_FINAL, HdlcControls.DM, HdlcControls.DISC):
+        if control in (
+            HdlcControls.DM_FINAL,
+            HdlcControls.DM,
+            HdlcControls.DISC,
+            HdlcControls.FRMR_FINAL,
+            HdlcControls.FRMR,
+        ):
             self._state = SessionState.DISCONNECTED
             return DisconnectedEvent()
 

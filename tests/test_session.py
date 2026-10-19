@@ -431,7 +431,22 @@ def test_session_error_handling() -> None:
     assert len(events) == 1
     assert isinstance(events[0], DisconnectedEvent)
 
-    # 6. Unexpected control byte delivers ProtocolErrorEvent
+    # 6. FRMR frame sent by meter disconnects session (both FRMR_FINAL and FRMR)
+    frmr_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.FRMR_FINAL)
+    session._state = SessionState.ASSOCIATED
+    events = session.receive_bytes(frmr_frame)
+    assert len(events) == 1
+    assert isinstance(events[0], DisconnectedEvent)
+    assert session.state == SessionState.DISCONNECTED
+
+    frmr_frame_no_final = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.FRMR)
+    session._state = SessionState.ASSOCIATED
+    events = session.receive_bytes(frmr_frame_no_final)
+    assert len(events) == 1
+    assert isinstance(events[0], DisconnectedEvent)
+    assert session.state == SessionState.DISCONNECTED
+
+    # 7. Unexpected control byte delivers ProtocolErrorEvent
     unknown_control_frame = build_frame(
         encode_address(32), encode_address(1, 42), HdlcControls.SNRM
     )  # unexpected SNRM from meter

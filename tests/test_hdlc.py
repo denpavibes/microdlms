@@ -116,6 +116,19 @@ def test_build_and_parse_unnumbered_frame() -> None:
     assert HdlcFrame.is_iframe(parsed_disc.control) is False
     assert HdlcFrame.is_uframe(parsed_disc.control) is True
 
+    # FRMR frame (0x97)
+    frmr_frame = build_frame(
+        dest_address=destination_address,
+        src_address=source_address,
+        control=HdlcControls.FRMR_FINAL,
+    )
+    parsed_frmr = parse_hdlc_frame(frmr_frame)
+    assert parsed_frmr.control == HdlcControls.FRMR_FINAL
+    assert parsed_frmr.frame_type == HdlcFrameTypes.UNNUMBERED
+    assert HdlcFrame.is_iframe(parsed_frmr.control) is False
+    assert HdlcFrame.is_uframe(parsed_frmr.control) is True
+    assert parsed_frmr.poll_final is True
+
 
 def test_build_and_parse_iframe() -> None:
     """Test building and parsing I-frames with HCS and LLC information payload."""
