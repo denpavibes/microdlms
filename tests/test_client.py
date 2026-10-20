@@ -588,7 +588,9 @@ async def test_client_get_zero_retries_and_default_retries(
         await client.get(attribute, retries=0)
 
     assert call_count == 1
+    assert client.is_connected is False
 
+    client._session._state = SessionState.ASSOCIATED
     call_count = 0
     with (
         patch.object(client, "_wait_for_event", side_effect=fake_wait),
@@ -597,6 +599,7 @@ async def test_client_get_zero_retries_and_default_retries(
         await client.get(attribute)
 
     assert call_count == 4
+    assert client.is_connected is False
 
 
 async def test_client_get_discards_stale_delayed_response_from_previous_get(
@@ -625,11 +628,6 @@ async def test_client_get_discards_stale_delayed_response_from_previous_get(
         await client.connect()
 
         attribute_a = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
-        # Query A fails with timeout (no bytes fed)
-        with pytest.raises(CommunicationError, match="Timeout"):
-            await client.get(attribute_a, retries=0)
-
-        # Delayed response for Query A (invoke_id=0, serial number) arrives
         response_a_apdu = bytes.fromhex(
             "c401c0000a083431393230393432"
         )  # invoke_id 0, value "41920942"
@@ -639,6 +637,12 @@ async def test_client_get_discards_stale_delayed_response_from_previous_get(
             control=make_i_control(send_seq=1, recv_seq=2),
             information=wrap_llc(response_a_apdu),
         )
+        # Query A succeeds
+        reader.feed_bytes(frame_a)
+        value_a = await client.get(attribute_a)
+        assert value_a == "41920942"
+
+        # Duplicate / delayed response for Query A (invoke_id=0) arrives before Query B
         reader.feed_bytes(frame_a)
 
         # And valid response for Query B (invoke_id=1, value 230 - unsigned 16-bit 0x00E6) arrives
@@ -816,3 +820,84 @@ def test_package_version_and_fallback() -> None:
     # Reload again to restore the actual version
     importlib.reload(microdlms)
     assert microdlms.__version__ != "unknown"
+
+
+async def test_client_get_timeout_marks_session_disconnected_and_allows_reconnect(
+    mock_serial_pair: tuple[MockReader, MockWriter],
+) -> None:
+    """Verify get timeout marks session disconnected, prevents DISC hang, and reconnects."""
+    reader, writer = mock_serial_pair
+
+    # 1. Connect frames
+    ua_frame = build_frame(encode_address(32), encode_address(1, 42), HdlcControls.UA_FINAL)
+    reader.feed_bytes(ua_frame)
+    aare_apdu = bytes.fromhex(
+        "6129a109060760857405080101a203020100a305a103020100be10040e0800065f1f040000101d00640007"
+    )
+    reader.feed_bytes(
+        build_frame(
+            dest_address=encode_address(32),
+            src_address=encode_address(1, 42),
+            control=make_i_control(send_seq=0, recv_seq=1),
+            information=wrap_llc(aare_apdu),
+        )
+    )
+
+    with patch("serialx.open_serial_connection", return_value=(reader, writer)):
+        client = AsyncMeterClient(port="COM1", timeout=0.02)
+        await client.connect()
+        assert client.is_connected is True
+        assert client.session.state == SessionState.ASSOCIATED
+
+        attribute = CosemAttribute(InterfaceClass.DATA, ObisCode(0, 0, 96, 1, 0, 255), 2)
+
+        # 2. Query times out (no bytes in reader, retries=1)
+        with pytest.raises(CommunicationError, match="Timeout"):
+            await client.get(attribute, retries=1, retry_delay=0.01)
+
+        # 3. Verify session transitioned to DISCONNECTED and is_connected is False
+        assert client.is_connected is False
+        assert client.session.state == SessionState.DISCONNECTED
+
+        # 4. Calling disconnect() on broken connection must not attempt DISC frame
+        writer_len_before = len(writer.written_bytes)
+        await client.disconnect()
+        assert len(writer.written_bytes) == writer_len_before
+        assert client.is_connected is False
+        assert client.session.state == SessionState.DISCONNECTED
+
+        # 5. Subsequent get() without reconnect raises not connected
+        with pytest.raises(CommunicationError, match="Client is not connected"):
+            await client.get(attribute)
+
+        # 6. Reconnect re-opens transport and re-associates cleanly
+        reader_reconnected, writer_reconnected = MockReader(), MockWriter()
+        reader_reconnected.feed_bytes(ua_frame)
+        reader_reconnected.feed_bytes(
+            build_frame(
+                dest_address=encode_address(32),
+                src_address=encode_address(1, 42),
+                control=make_i_control(send_seq=0, recv_seq=1),
+                information=wrap_llc(aare_apdu),
+            )
+        )
+        response_apdu = bytes.fromhex("c401c0000a083431393230393432")
+        reader_reconnected.feed_bytes(
+            build_frame(
+                dest_address=encode_address(32),
+                src_address=encode_address(1, 42),
+                control=make_i_control(send_seq=1, recv_seq=2),
+                information=wrap_llc(response_apdu),
+            )
+        )
+
+        with patch(
+            "serialx.open_serial_connection",
+            return_value=(reader_reconnected, writer_reconnected),
+        ):
+            await client.connect()
+            assert client.is_connected is True
+            assert client.session.state == SessionState.ASSOCIATED
+
+            value = await client.get(attribute)
+            assert value == "41920942"

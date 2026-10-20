@@ -183,6 +183,7 @@ class AsyncMeterClient:
     ) -> None:
         """Raise primary or current communication error if disconnected or out of retries."""
         if not self.is_connected or attempt == retries:
+            self._session.abort()
             final_error = primary_error if primary_error is not None else error
             raise final_error from error
 
@@ -230,6 +231,7 @@ class AsyncMeterClient:
                 self._writer = None
                 self._reader = None
             self._event_queue.clear()
+            self._session.abort()
 
     async def _flush_outbound(self) -> None:
         """Transmit any pending bytes from the session outbound buffer."""

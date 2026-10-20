@@ -552,3 +552,36 @@ def test_session_supervisory_frame_handling() -> None:
     assert isinstance(events[0], ProtocolErrorEvent)
     assert "Supervisory frame received: REJECT N(R)=4" in events[0].message
     assert session.send_seq == 4
+
+
+def test_session_abort_and_mark_disconnected() -> None:
+    """Verify DlmsSession.abort() and mark_disconnected() reset state and counters."""
+    session = DlmsSession()
+    session._state = SessionState.ASSOCIATED
+    session._send_seq = 5
+    session._recv_seq = 3
+    session._invoke_id = 7
+    session._inbound_buffer.extend(b"\x01\x02\x03")
+    session._outbound_buffer.extend(b"\x04\x05\x06")
+
+    session.abort()
+    assert session.state == SessionState.DISCONNECTED
+    assert session.send_seq == 0
+    assert session.recv_seq == 0
+    assert session.invoke_id == 0
+    assert session.data_to_send() == b""
+
+    # Test mark_disconnected as an alias
+    session._state = SessionState.CONNECTED
+    session._send_seq = 2
+    session._recv_seq = 2
+    session._invoke_id = 4
+    session._inbound_buffer.extend(b"\xaa")
+    session._outbound_buffer.extend(b"\xbb")
+
+    session.mark_disconnected()
+    assert session.state == SessionState.DISCONNECTED
+    assert session.send_seq == 0
+    assert session.recv_seq == 0
+    assert session.invoke_id == 0
+    assert session.data_to_send() == b""

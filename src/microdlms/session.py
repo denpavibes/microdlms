@@ -108,6 +108,19 @@ class DlmsSession:
         """Current invoke ID counter (0..15)."""
         return self._invoke_id
 
+    def abort(self) -> None:
+        """Reset session to disconnected state and clear buffers and sequence numbers."""
+        self._state = SessionState.DISCONNECTED
+        self._send_seq = 0
+        self._recv_seq = 0
+        self._invoke_id = 0
+        self._inbound_buffer.clear()
+        self._outbound_buffer.clear()
+
+    def mark_disconnected(self) -> None:
+        """Mark session as disconnected and reset internal state."""
+        self.abort()
+
     def initiate_connect(self) -> None:
         """Prepare an HDLC SNRM frame to establish physical data link connection."""
         self._send_seq = 0
