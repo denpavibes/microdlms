@@ -39,10 +39,7 @@ This document outlines architecture principles, operational standards, hardware 
 ## 3. Git & Operational Conventions
 
 ### 3.1 Commit Guidelines
-- **Commit Message Prefix**: Prefix commit messages to reflect authorship:
-  - `[ai]`: For autonomous agent-generated commits (e.g., `[ai] Support multi-frame A-XDR structures.`).
-  - `[human+ai]`: For collaborative commits pairing human and AI contributions.
-- **Commit Format**: Keep commit messages concise (under 50 characters including prefix) and end with a full stop (`.`).
+- **Commits by AI Agents**: Subject at most 50 characters, in imperative mood, ending with a period (no `[ai]` prefix). Commits must include Git trailers in the final paragraph separated by a blank line: `AI-Model: <model-id>` and `Co-Authored-By: <agent> <email>` (e.g. `Co-Authored-By: Antigravity <antigravity@denpa.pro>`). An extended body between the subject and trailers is encouraged.
 - **Branching**: Conduct feature and bugfix work on dedicated branches (`feature/<name>` or `fix/<name>`). Never commit experimental scaffolding directly to the main branch.
 
 ### 3.2 Code Hygiene Tools
